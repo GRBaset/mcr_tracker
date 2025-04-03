@@ -35,5 +35,8 @@
   "winner": "Gagnant",
   "giver": "Donneur",
   "moreThanEight": "Doit être supérieur à 8",
-  "addTurn": "Ajouter la manche"
+  "addTurn": "Ajouter la manche",
+  "draw": "Manche nulle",
+  "self": "Tiré soi-même",
+  "offDiscard": "Sur défausse"
 }

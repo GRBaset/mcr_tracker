@@ -35,5 +35,8 @@
   "winner": "Winner",
   "giver": "Giver",
   "moreThanEight": "Needs to be higher than 8",
-  "addTurn": "Add turn"
+  "addTurn": "Add turn",
+  "draw": "Draw",
+  "self": "Self",
+  "offDiscard": "Off discard"
 }

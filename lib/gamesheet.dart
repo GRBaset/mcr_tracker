@@ -19,23 +19,23 @@ class _GamePageState extends State<GamePage> {
   late List<int> playerScores;
   late List<int> gameData;
   int turn = 0;
-  final List<DataRow> rows = [];
+  final List<List<int>> rowsData = [];
   String player1Wind = "";
   String player2Wind = "";
   String player3Wind = "";
   String player4Wind = "";
   String player5Wind = "";
   String turnEnd = "draw";
-  final List<String> turnEndChoices = ["draw", "self", "off discard"];
+  final List<String> turnEndChoices = ["draw", "self", "offDiscard"];
   int currentHandValue = 0;
   int currentWinner = 0;
   String currentWinnerName = "";
   int currentLoser = 0;
   String currentLoserName = "";
+  static const boldText = TextStyle(fontWeight: FontWeight.bold);
 
   @override
   void initState() {
-    print("bruh3");
     super.initState();
     _loadGames();
   }
@@ -45,11 +45,23 @@ class _GamePageState extends State<GamePage> {
     super.didUpdateWidget(oldGamePage);
 
     _loadGames();
-    print("bruh4");
   }
 
   bool _is5thPlayer(int player, int turn) {
     return players.length == 5 && fivePlayersTurns[player][turn].isEmpty;
+  }
+
+  String _translateTurnEnd(String turnEnd) {
+    switch (turnEnd) {
+      case "draw":
+        return AppLocalizations.of(context)!.draw;
+      case "self":
+        return AppLocalizations.of(context)!.self;
+      case "offDiscard":
+        return AppLocalizations.of(context)!.offDiscard;
+      default:
+        return "";
+    }
   }
 
   void _updatePlayersWinds(int turn) {
@@ -96,32 +108,87 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _loadDataRows() {
-    rows.clear();
-    //           E   S  W  N
-    //           P1 P2 P3 P4 P5
-    rows.add(
-      DataRow(
-        cells: [
-          const DataCell(Text("")),
-          const DataCell(Text("")),
-          for (String player in players)
-            DataCell(
-                Container(
-                    alignment: Alignment.center,
-                    child: Text(player, style: const TextStyle(fontWeight: FontWeight.bold)))
-            ),
-        ],
-      ),
-    );
+    rowsData.clear();
+
     for (int turnToAdd = 0; turnToAdd < turn; turnToAdd++) {
       int handValue = gameData[3 * turnToAdd];
       int winner = gameData[3 * turnToAdd + 1];
       int loser = gameData[3 * turnToAdd + 2];
-      _addNewRow(turnToAdd, handValue, winner, loser);
+      _addNewScore(turnToAdd, handValue, winner, loser);
     }
   }
 
-  void _addNewRow(int turnToAdd, int handValue, int winner, int loser) {
+  List<DataRow> _buildDataRows() {
+    List<DataRow> builtDataRows = [];
+    //           E   S  W  N
+    //           P1 P2 P3 P4 P5
+    builtDataRows.add(_buildPlayerNames());
+    builtDataRows.add(_buildPlayerTotal());
+
+    for (int rowTurn = 0; rowTurn < rowsData.length / 2; rowTurn++) {
+      // TURN HAND -8 -8 -18 +x
+      builtDataRows.add(
+        DataRow(
+          cells: [
+            DataCell(Container(alignment: Alignment.center, child: Text(turnNamesShort[rowTurn]))),
+            DataCell(Container(alignment: Alignment.center, child: Text(rowsData[2 * rowTurn][0].toString()))),
+            for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
+              DataCell(Container(
+                  alignment: Alignment.center,
+                  child: Text(rowsData[2 * rowTurn][playerIndex + 1].toString()))
+              ),
+          ],
+        ),
+      );
+      // (total)    x   x  x  x  x
+      builtDataRows.add(
+        DataRow(
+          cells: [
+            DataCell(Container(alignment: Alignment.center, child: const Text("Total"))),
+            const DataCell(Text("")),
+            for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
+              DataCell(Container(
+                  alignment: Alignment.center,
+                  child: Text(rowsData[2 * rowTurn + 1][playerIndex].toString()))
+              ),
+          ],
+        ),
+      );
+    }
+
+    return builtDataRows;
+  }
+
+  DataRow _buildPlayerNames() {
+    return DataRow(
+      cells: [
+        const DataCell(Text("")),
+        const DataCell(Text("")),
+        for (String player in players)
+          DataCell(
+              Container(
+                  alignment: Alignment.center,
+                  child: Text(player, style: boldText))
+          ),
+      ],
+    );
+  }
+
+  DataRow _buildPlayerTotal() {
+    return DataRow(
+      cells: [
+        DataCell(Container(alignment: Alignment.center, child: const Text("Score", style: boldText))),
+        DataCell(Container(alignment: Alignment.center, child: Text(turnNamesShort[turn], style: boldText))),
+        for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
+          DataCell(Container(
+              alignment: Alignment.center,
+              child: Text(playerScores[playerIndex].toString(), style: boldText))
+          ),
+      ],
+    );
+  }
+
+  void _addNewScore(int turnToAdd, int handValue, int winner, int loser) {
     List<int> delta = [];
     for (int playerNum = 1; playerNum < players.length + 1; playerNum++) {
       if (handValue == 0 || _is5thPlayer(playerNum - 1, turnToAdd)) {
@@ -147,34 +214,9 @@ class _GamePageState extends State<GamePage> {
     for (int playerIndex = 0; playerIndex < players.length; playerIndex++) {
       playerScores[playerIndex] += delta[playerIndex];
     }
-    // TURN HAND -8 -8 -18 +x
-    rows.add(
-      DataRow(
-        cells: [
-          DataCell(Container(alignment: Alignment.center, child: Text(turnNamesShort[turnToAdd]))),
-          DataCell(Container(alignment: Alignment.center, child: Text(handValue.toString()))),
-          for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
-            DataCell(Container(
-                alignment: Alignment.center,
-                child: Text(delta[playerIndex].toString()))
-            ),
-        ],
-      ),
-    );
-    // (total)    x   x  x  x  x
-    rows.add(
-      DataRow(
-        cells: [
-          DataCell(Container(alignment: Alignment.center, child: const Text("Total"))),
-          const DataCell(Text("")),
-          for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
-            DataCell(Container(
-                alignment: Alignment.center,
-                child: Text(playerScores[playerIndex].toString()))
-            ),
-        ],
-      ),
-    );
+
+    rowsData.add([handValue] + delta);
+    rowsData.add(List.from(playerScores));
   }
 
   Future<void> _saveTurn() async {
@@ -199,8 +241,8 @@ class _GamePageState extends State<GamePage> {
     prefs.setStringList(widget.gameID, [base64Encode(gameData)] + players);
     turn--;
     _updatePlayersWinds(turn);
-    rows.removeLast();
-    rows.removeLast();
+    rowsData.removeRange(rowsData.length - 2, rowsData.length);
+    playerScores = List.from(rowsData.last);
     setState(() {
 
     });
@@ -220,7 +262,7 @@ class _GamePageState extends State<GamePage> {
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
-                child: DataTable(
+                child: players.isNotEmpty ? DataTable(
                   columnSpacing: 10.0,
                   columns: <DataColumn>[
                     DataColumn(
@@ -282,8 +324,8 @@ class _GamePageState extends State<GamePage> {
                         ),
                       ),
                   ],
-                  rows: rows,
-                )
+                  rows: _buildDataRows(),
+                ) : Text('Loading...'),
               ),
             ),
           ),
@@ -293,7 +335,7 @@ class _GamePageState extends State<GamePage> {
           child: Visibility(
             visible: turn > 0,
             child: ElevatedButton(
-              style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll<Color>(Colors.red)),
+              style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll<Color>(Colors.red)),
               onPressed: () => _deleteLastTurn(),
               child: Text(AppLocalizations.of(context)!.deleteLastTurn),
             ),
@@ -323,7 +365,7 @@ class _GamePageState extends State<GamePage> {
                               top: -40.0,
                               child: InkResponse(
                                 onTap: () {
-                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop('close');
                                 },
                                 child: const CircleAvatar(
                                   backgroundColor: Colors.red,
@@ -350,7 +392,7 @@ class _GamePageState extends State<GamePage> {
                                             String value) {
                                           return DropdownMenuItem<String>(
                                             value: value,
-                                            child: Text(value),
+                                            child: Text(_translateTurnEnd(value)),
                                           );
                                         }).toList(),
                                         onSaved: (value) {
@@ -368,7 +410,7 @@ class _GamePageState extends State<GamePage> {
                                         },
                                       ),
                                     ),
-                                    if (turnEnd == "self" || turnEnd == "off discard")
+                                    if (turnEnd == "self" || turnEnd == "offDiscard")
                                       Padding(
                                         padding: const EdgeInsets.all(1.0),
                                         child: TextFormField(
@@ -391,7 +433,7 @@ class _GamePageState extends State<GamePage> {
                                           },
                                         ),
                                       ),
-                                    if (turnEnd == "self" || turnEnd == "off discard")
+                                    if (turnEnd == "self" || turnEnd == "offDiscard")
                                       Padding(
                                         padding: const EdgeInsets.all(1.0),
                                         child: DropdownButtonFormField<String>(
@@ -424,7 +466,7 @@ class _GamePageState extends State<GamePage> {
                                           },
                                         ),
                                       ),
-                                    if (turnEnd == "off discard" && currentWinner > 0)
+                                    if (turnEnd == "offDiscard" && currentWinner > 0)
                                       Padding(
                                         padding: const EdgeInsets.all(1.0),
                                         child: DropdownButtonFormField<String>(
@@ -464,7 +506,7 @@ class _GamePageState extends State<GamePage> {
                                         onPressed: () {
                                           if (_formKey.currentState!.validate()) {
                                             _formKey.currentState?.save();
-                                            Navigator.of(context).pop();
+                                            Navigator.of(context).pop('ok');
                                           }
                                         },
                                       ),
@@ -478,8 +520,10 @@ class _GamePageState extends State<GamePage> {
                       );
                     });
                   }).then((value) => setState(() {
-                _addNewRow(turn, currentHandValue, currentWinner, currentLoser);
-                _saveTurn();
+                    if (value == 'ok') {
+                      _addNewScore(turn, currentHandValue, currentWinner, currentLoser);
+                      _saveTurn();
+                    }
               }));
             },
             tooltip: 'New turn',
