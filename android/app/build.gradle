@@ -60,6 +60,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+    namespace 'com.anthonys01.mcr_tracker'
 }
 
 flutter {
