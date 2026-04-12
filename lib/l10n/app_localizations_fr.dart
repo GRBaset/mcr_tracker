@@ -84,6 +84,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get deleteButton => 'SUPPRIMER';
 
   @override
+  String get cancelButton => 'ANNULER';
+
+  @override
+  String get deleteQuestion => 'Supprimer partie?';
+
+  @override
+  String get deleteDialog =>
+      'Êtes-vous absolument certain de vouler supprimer ce partie? Cette action est irréversible.';
+
+  @override
   String get required => 'Requis';
 
   @override

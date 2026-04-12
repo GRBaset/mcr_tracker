@@ -248,6 +248,24 @@ abstract class AppLocalizations {
   /// **'DELETE'**
   String get deleteButton;
 
+  /// No description provided for @cancelButton.
+  ///
+  /// In en, this message translates to:
+  /// **'CANCEL'**
+  String get cancelButton;
+
+  /// No description provided for @deleteQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete game?'**
+  String get deleteQuestion;
+
+  /// No description provided for @deleteDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you absolutely sure you want to delete this game? This action is irreversible.'**
+  String get deleteDialog;
+
   /// No description provided for @required.
   ///
   /// In en, this message translates to:

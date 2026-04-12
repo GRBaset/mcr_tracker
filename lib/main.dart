@@ -168,6 +168,34 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  Future<void> _showDeleteGameDialog(String gameID) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.deleteQuestion),
+          content: Text(AppLocalizations.of(context)!.deleteDialog),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                _deleteGame(gameID);
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                AppLocalizations.of(context)!.deleteButton,
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context)!.cancelButton),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _deleteGame(String gameID) async {
@@ -222,7 +250,7 @@ class _HomePageState extends State<HomePage> {
                   style: TextStyle(color: Colors.red),
                 ),
                 onPressed: () {
-                  _deleteGame(gameID);
+                  _showDeleteGameDialog(gameID);
                 },
               ),
               const Spacer(),

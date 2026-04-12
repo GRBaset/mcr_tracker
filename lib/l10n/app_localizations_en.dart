@@ -84,6 +84,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteButton => 'DELETE';
 
   @override
+  String get cancelButton => 'CANCEL';
+
+  @override
+  String get deleteQuestion => 'Delete game?';
+
+  @override
+  String get deleteDialog =>
+      'Are you absolutely sure you want to delete this game? This action is irreversible.';
+
+  @override
   String get required => 'Required';
 
   @override
