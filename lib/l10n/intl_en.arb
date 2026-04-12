@@ -5,7 +5,7 @@
   "westPlayer": "West player",
   "southPlayer": "South player",
   "northPlayer": "North player",
-  "fifthPlayer": "5th player",
+  "fifthPlayer": "Extra player",
   "east1": "East 1",
   "east2": "East 2",
   "east3": "East 3",
@@ -40,6 +40,6 @@
   "moreThanEight": "Needs to be higher than 8",
   "addTurn": "Add turn",
   "draw": "Draw",
-  "self": "Self",
+  "self": "Self-drawn",
   "offDiscard": "Off discard"
 }

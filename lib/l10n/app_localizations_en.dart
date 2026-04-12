@@ -24,7 +24,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get northPlayer => 'North player';
 
   @override
-  String get fifthPlayer => '5th player';
+  String get fifthPlayer => 'Extra player';
 
   @override
   String get east1 => 'East 1';
@@ -130,7 +130,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get draw => 'Draw';
 
   @override
-  String get self => 'Self';
+  String get self => 'Self-drawn';
 
   @override
   String get offDiscard => 'Off discard';

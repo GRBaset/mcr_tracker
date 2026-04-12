@@ -24,7 +24,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get northPlayer => 'Joueur Nord';
 
   @override
-  String get fifthPlayer => '5ème joueur';
+  String get fifthPlayer => 'Joueur supplémentaire';
 
   @override
   String get east1 => 'Est 1';
