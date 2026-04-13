@@ -83,7 +83,9 @@ class _GamePageState extends State<GamePage> {
       player3Wind = windChars[fourPlayersTurns[2][turn]]!;
       player4Wind = windChars[fourPlayersTurns[3][turn]]!;
     }
-    print("$turn, '$player1Wind' '$player2Wind' '$player3Wind' '$player4Wind' '$player5Wind'");
+    print(
+      "$turn, '$player1Wind' '$player2Wind' '$player3Wind' '$player4Wind' '$player5Wind'",
+    );
   }
 
   void _loadGames() async {
@@ -130,12 +132,30 @@ class _GamePageState extends State<GamePage> {
       builtDataRows.add(
         DataRow(
           cells: [
-            DataCell(Container(alignment: Alignment.center, child: Text(turnNamesShort[rowTurn]))),
-            DataCell(Container(alignment: Alignment.center, child: Text(rowsData[2 * rowTurn][0].toString()))),
-            for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
-              DataCell(Container(
+            DataCell(
+              Container(
+                alignment: Alignment.center,
+                child: Text(turnNamesShort[rowTurn]),
+              ),
+            ),
+            DataCell(
+              Container(
+                alignment: Alignment.center,
+                child: Text(rowsData[2 * rowTurn][0].toString()),
+              ),
+            ),
+            for (
+              int playerIndex = 0;
+              playerIndex < players.length;
+              playerIndex++
+            )
+              DataCell(
+                Container(
                   alignment: Alignment.center,
-                  child: Text(rowsData[2 * rowTurn][playerIndex + 1].toString()))
+                  child: Text(
+                    rowsData[2 * rowTurn][playerIndex + 1].toString(),
+                  ),
+                ),
               ),
           ],
         ),
@@ -144,12 +164,25 @@ class _GamePageState extends State<GamePage> {
       builtDataRows.add(
         DataRow(
           cells: [
-            DataCell(Container(alignment: Alignment.center, child: const Text("Total"))),
+            DataCell(
+              Container(
+                alignment: Alignment.center,
+                child: Text(AppLocalizations.of(context)!.total),
+              ),
+            ),
             const DataCell(Text("")),
-            for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
-              DataCell(Container(
+            for (
+              int playerIndex = 0;
+              playerIndex < players.length;
+              playerIndex++
+            )
+              DataCell(
+                Container(
                   alignment: Alignment.center,
-                  child: Text(rowsData[2 * rowTurn + 1][playerIndex].toString()))
+                  child: Text(
+                    rowsData[2 * rowTurn + 1][playerIndex].toString(),
+                  ),
+                ),
               ),
           ],
         ),
@@ -166,9 +199,10 @@ class _GamePageState extends State<GamePage> {
         const DataCell(Text("")),
         for (String player in players)
           DataCell(
-              Container(
-                  alignment: Alignment.center,
-                  child: Text(player, style: boldText))
+            Container(
+              alignment: Alignment.center,
+              child: Text(player, style: boldText),
+            ),
           ),
       ],
     );
@@ -177,12 +211,27 @@ class _GamePageState extends State<GamePage> {
   DataRow _buildPlayerTotal() {
     return DataRow(
       cells: [
-        DataCell(Container(alignment: Alignment.center, child: const Text("Score", style: boldText))),
-        DataCell(Container(alignment: Alignment.center, child: Text(turnNamesShort[turn], style: boldText))),
+        DataCell(
+          Container(
+            alignment: Alignment.center,
+            child: Text(AppLocalizations.of(context)!.score, style: boldText),
+          ),
+        ),
+        DataCell(
+          Container(
+            alignment: Alignment.center,
+            child: Text(turnNamesShort[turn], style: boldText),
+          ),
+        ),
         for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
-          DataCell(Container(
+          DataCell(
+            Container(
               alignment: Alignment.center,
-              child: Text(playerScores[playerIndex].toString(), style: boldText))
+              child: Text(
+                playerScores[playerIndex].toString(),
+                style: boldText,
+              ),
+            ),
           ),
       ],
     );
@@ -198,14 +247,14 @@ class _GamePageState extends State<GamePage> {
         if (playerNum == winner) {
           delta.add(3 * (8 + handValue));
         } else {
-          delta.add(-8 -handValue);
+          delta.add(-8 - handValue);
         }
       } else {
         // win off discard
         if (playerNum == winner) {
           delta.add(3 * 8 + handValue);
         } else if (playerNum == loser) {
-          delta.add(-8 -handValue);
+          delta.add(-8 - handValue);
         } else {
           delta.add(-8);
         }
@@ -226,9 +275,7 @@ class _GamePageState extends State<GamePage> {
     prefs.setStringList(widget.gameID, [base64Encode(gameData)] + players);
     turn++;
     _updatePlayersWinds(turn);
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   Future<void> _deleteLastTurn() async {
@@ -243,294 +290,370 @@ class _GamePageState extends State<GamePage> {
     _updatePlayersWinds(turn);
     rowsData.removeRange(rowsData.length - 2, rowsData.length);
     playerScores = List.from(rowsData.last);
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     return Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.scoreSheet),
-        ),
-        body: SizedBox.expand(
-          child: Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height / 8),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.scoreSheet)),
+      body: SizedBox.expand(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height / 8,
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
             child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: players.isNotEmpty ? DataTable(
-                  columnSpacing: 10.0,
-                  columns: <DataColumn>[
-                    DataColumn(
-                      label: SizedBox(
-                        width: (width - 70) * 2 / 24,
-                        child: const Text(''),
-                      ),
-                    ),
-                    DataColumn(
-                      label: SizedBox(
-                        width: (width - 70) * 1 / 24,
-                        child: const Text(''),
-                      ),
-                    ),
-                    DataColumn(
-                      label: SizedBox(
-                        width: (width - 70) * 3 / 24,
-                        child: Container(
-                            alignment: Alignment.center,
-                            child: Text(player1Wind)
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: SizedBox(
-                        width: (width - 70) * 3 / 24,
-                        child: Container(
-                            alignment: Alignment.center,
-                            child: Text(player2Wind)
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: SizedBox(
-                        width: (width - 70) * 3 / 24,
-                        child: Container(
-                            alignment: Alignment.center,
-                            child: Text(player3Wind)
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: SizedBox(
-                        width: (width - 70) * 3 / 24,
-                        child: Container(
-                            alignment: Alignment.center,
-                            child: Text(player4Wind)
-                        ),
-                      ),
-                    ),
-                    if (players.length == 5)
-                      DataColumn(
-                        label: SizedBox(
-                          width: (width - 70) * 3 / 24,
-                          child: Container(
-                              alignment: Alignment.center,
-                              child: Text(player5Wind)
+              scrollDirection: Axis.vertical,
+              child:
+                  players.isNotEmpty
+                      ? DataTable(
+                        columnSpacing: 10.0,
+                        columns: <DataColumn>[
+                          DataColumn(
+                            label: SizedBox(
+                              width: (width - 70) * 2 / 24,
+                              child: const Text(''),
+                            ),
                           ),
-                        ),
-                      ),
-                  ],
-                  rows: _buildDataRows(),
-                ) : Text('Loading...'),
-              ),
-            ),
-          ),
-        ),
-        bottomSheet: Padding(
-          padding: const EdgeInsets.only(bottom: 20.0, left: 20.0),
-          child: Visibility(
-            visible: turn > 0,
-            child: ElevatedButton(
-              style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll<Color>(Colors.red)),
-              onPressed: () => _deleteLastTurn(),
-              child: Text(AppLocalizations.of(context)!.deleteLastTurn),
-            ),
-          ),
-        ),
-        floatingActionButton: Visibility(
-          visible: turn < 16,
-          child: FloatingActionButton(
-            onPressed: () {
-              turnEnd = "";
-              currentHandValue = 0;
-              currentWinner = 0;
-              currentWinnerName = "";
-              currentLoser = 0;
-              currentLoserName = "";
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return StatefulBuilder(builder: (context, StateSetter setState)
-                    {
-                      return AlertDialog(
-                        content: Stack(
-                          clipBehavior: Clip.none,
-                          children: <Widget>[
-                            Positioned(
-                              right: -40.0,
-                              top: -40.0,
-                              child: InkResponse(
-                                onTap: () {
-                                  Navigator.of(context).pop('close');
-                                },
-                                child: const CircleAvatar(
-                                  backgroundColor: Colors.red,
-                                  child: Icon(Icons.close),
+                          DataColumn(
+                            label: SizedBox(
+                              width: (width - 70) * 1 / 24,
+                              child: const Text(''),
+                            ),
+                          ),
+                          DataColumn(
+                            label: SizedBox(
+                              width: (width - 70) * 3 / 24,
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: Text(player1Wind),
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: SizedBox(
+                              width: (width - 70) * 3 / 24,
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: Text(player2Wind),
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: SizedBox(
+                              width: (width - 70) * 3 / 24,
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: Text(player3Wind),
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: SizedBox(
+                              width: (width - 70) * 3 / 24,
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: Text(player4Wind),
+                              ),
+                            ),
+                          ),
+                          if (players.length == 5)
+                            DataColumn(
+                              label: SizedBox(
+                                width: (width - 70) * 3 / 24,
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  child: Text(player5Wind),
                                 ),
                               ),
                             ),
-                            Form(
-                              key: _formKey,
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
+                        ],
+                        rows: _buildDataRows(),
+                      )
+                      : Text(AppLocalizations.of(context)!.loading),
+            ),
+          ),
+        ),
+      ),
+      bottomSheet: Padding(
+        padding: const EdgeInsets.only(bottom: 20.0, left: 20.0),
+        child: Visibility(
+          visible: turn > 0,
+          child: ElevatedButton(
+            style: const ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll<Color>(Colors.red),
+            ),
+            onPressed: () => _deleteLastTurn(),
+            child: Text(AppLocalizations.of(context)!.deleteLastTurn),
+          ),
+        ),
+      ),
+      floatingActionButton: Visibility(
+        visible: turn < 16,
+        child: FloatingActionButton(
+          onPressed: () {
+            turnEnd = "";
+            currentHandValue = 0;
+            currentWinner = 0;
+            currentWinnerName = "";
+            currentLoser = 0;
+            currentLoserName = "";
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return StatefulBuilder(
+                  builder: (context, StateSetter setState) {
+                    return AlertDialog(
+                      content: Stack(
+                        clipBehavior: Clip.none,
+                        children: <Widget>[
+                          Positioned(
+                            right: -40.0,
+                            top: -40.0,
+                            child: InkResponse(
+                              onTap: () {
+                                Navigator.of(context).pop('close');
+                              },
+                              child: const CircleAvatar(
+                                backgroundColor: Colors.red,
+                                child: Icon(Icons.close),
+                              ),
+                            ),
+                          ),
+                          Form(
+                            key: _formKey,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.all(1.0),
+                                    child: DropdownButtonFormField<String>(
+                                      onChanged: (String? value) {
+                                        setState(() {
+                                          turnEnd = value!;
+                                        });
+                                      },
+                                      items:
+                                          turnEndChoices
+                                              .map<DropdownMenuItem<String>>((
+                                                String value,
+                                              ) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(
+                                                    _translateTurnEnd(value),
+                                                  ),
+                                                );
+                                              })
+                                              .toList(),
+                                      onSaved: (value) {
+                                        // TODO SAVE VALUE
+                                      },
+                                      decoration: InputDecoration(
+                                        labelText:
+                                            AppLocalizations.of(
+                                              context,
+                                            )!.turnEnd,
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.required;
+                                        }
+                                        // TODO CHECK
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  if (turnEnd == "self" ||
+                                      turnEnd == "offDiscard")
+                                    Padding(
+                                      padding: const EdgeInsets.all(1.0),
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.allow(
+                                            RegExp(r'\d'),
+                                          ),
+                                          FilteringTextInputFormatter
+                                              .digitsOnly,
+                                        ],
+                                        onSaved: (value) {
+                                          currentHandValue = int.parse(value!);
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(
+                                                context,
+                                              )!.handValue,
+                                        ),
+                                        validator: (value) {
+                                          if (value == null ||
+                                              value.isEmpty ||
+                                              int.parse(value) < 8) {
+                                            return AppLocalizations.of(
+                                              context,
+                                            )!.moreThanEight;
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                  if (turnEnd == "self" ||
+                                      turnEnd == "offDiscard")
                                     Padding(
                                       padding: const EdgeInsets.all(1.0),
                                       child: DropdownButtonFormField<String>(
                                         onChanged: (String? value) {
                                           setState(() {
-                                            turnEnd = value!;
+                                            currentWinnerName = value!;
+                                            currentWinner =
+                                                players.indexOf(
+                                                  currentWinnerName,
+                                                ) +
+                                                1;
                                           });
                                         },
-                                        items: turnEndChoices.map<
-                                            DropdownMenuItem<String>>((
-                                            String value) {
-                                          return DropdownMenuItem<String>(
-                                            value: value,
-                                            child: Text(_translateTurnEnd(value)),
-                                          );
-                                        }).toList(),
-                                        onSaved: (value) {
-                                          // TODO SAVE VALUE
-                                        },
+                                        items:
+                                            players
+                                                .where(
+                                                  (player) =>
+                                                      player !=
+                                                          currentLoserName &&
+                                                      !_is5thPlayer(
+                                                        players.indexOf(player),
+                                                        turn,
+                                                      ),
+                                                )
+                                                .map<DropdownMenuItem<String>>((
+                                                  String value,
+                                                ) {
+                                                  return DropdownMenuItem<
+                                                    String
+                                                  >(
+                                                    value: value,
+                                                    child: Text(value),
+                                                  );
+                                                })
+                                                .toList(),
+                                        onSaved: (value) {},
                                         decoration: InputDecoration(
-                                            labelText: AppLocalizations.of(context)!.turnEnd
+                                          labelText:
+                                              AppLocalizations.of(
+                                                context,
+                                              )!.winner,
                                         ),
                                         validator: (value) {
                                           if (value == null || value.isEmpty) {
-                                            return AppLocalizations.of(context)!.required;
+                                            return AppLocalizations.of(
+                                              context,
+                                            )!.required;
                                           }
-                                          // TODO CHECK
                                           return null;
                                         },
                                       ),
                                     ),
-                                    if (turnEnd == "self" || turnEnd == "offDiscard")
-                                      Padding(
-                                        padding: const EdgeInsets.all(1.0),
-                                        child: TextFormField(
-                                          keyboardType: TextInputType.number,
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter.allow(RegExp(r'\d')),
-                                            FilteringTextInputFormatter.digitsOnly
-                                          ],
-                                          onSaved: (value) {
-                                            currentHandValue = int.parse(value!);
-                                          },
-                                          decoration: InputDecoration(
-                                              labelText: AppLocalizations.of(context)!.handValue
-                                          ),
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty || int.parse(value) < 8) {
-                                              return AppLocalizations.of(context)!.moreThanEight;
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                    if (turnEnd == "self" || turnEnd == "offDiscard")
-                                      Padding(
-                                        padding: const EdgeInsets.all(1.0),
-                                        child: DropdownButtonFormField<String>(
-                                          onChanged: (String? value) {
-                                            setState(() {
-                                              currentWinnerName = value!;
-                                              currentWinner = players.indexOf(currentWinnerName) + 1;
-                                            });
-                                          },
-                                          items: players
-                                              .where((player) => player != currentLoserName && !_is5thPlayer(players.indexOf(player), turn))
-                                              .map<
-                                              DropdownMenuItem<String>>((
-                                              String value) {
-                                            return DropdownMenuItem<String>(
-                                              value: value,
-                                              child: Text(value),
-                                            );
-                                          }).toList(),
-                                          onSaved: (value) {
-                                          },
-                                          decoration: InputDecoration(
-                                              labelText: AppLocalizations.of(context)!.winner
-                                          ),
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return AppLocalizations.of(context)!.required;
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                    if (turnEnd == "offDiscard" && currentWinner > 0)
-                                      Padding(
-                                        padding: const EdgeInsets.all(1.0),
-                                        child: DropdownButtonFormField<String>(
-                                          onChanged: (String? value) {
-                                            setState(() {
-                                              currentLoserName = value!;
-                                              currentLoser = players.indexOf(currentLoserName) + 1;
-                                            });
-                                          },
-                                          items: players
-                                              .where((player) => player != currentWinnerName && !_is5thPlayer(players.indexOf(player), turn))
-                                              .map<
-                                              DropdownMenuItem<String>>((
-                                              String value) {
-                                            return DropdownMenuItem<String>(
-                                              value: value,
-                                              child: Text(value),
-                                            );
-                                          }).toList(),
-                                          onSaved: (value) {
-                                          },
-                                          decoration: InputDecoration(
-                                              labelText: AppLocalizations.of(context)!.giver
-                                          ),
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return AppLocalizations.of(context)!.required;
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
+                                  if (turnEnd == "offDiscard" &&
+                                      currentWinner > 0)
                                     Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ElevatedButton(
-                                        child: Text(AppLocalizations.of(context)!.addTurn),
-                                        onPressed: () {
-                                          if (_formKey.currentState!.validate()) {
-                                            _formKey.currentState?.save();
-                                            Navigator.of(context).pop('ok');
+                                      padding: const EdgeInsets.all(1.0),
+                                      child: DropdownButtonFormField<String>(
+                                        onChanged: (String? value) {
+                                          setState(() {
+                                            currentLoserName = value!;
+                                            currentLoser =
+                                                players.indexOf(
+                                                  currentLoserName,
+                                                ) +
+                                                1;
+                                          });
+                                        },
+                                        items:
+                                            players
+                                                .where(
+                                                  (player) =>
+                                                      player !=
+                                                          currentWinnerName &&
+                                                      !_is5thPlayer(
+                                                        players.indexOf(player),
+                                                        turn,
+                                                      ),
+                                                )
+                                                .map<DropdownMenuItem<String>>((
+                                                  String value,
+                                                ) {
+                                                  return DropdownMenuItem<
+                                                    String
+                                                  >(
+                                                    value: value,
+                                                    child: Text(value),
+                                                  );
+                                                })
+                                                .toList(),
+                                        onSaved: (value) {},
+                                        decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(
+                                                context,
+                                              )!.giver,
+                                        ),
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return AppLocalizations.of(
+                                              context,
+                                            )!.required;
                                           }
+                                          return null;
                                         },
                                       ),
-                                    )
-                                  ],
-                                ),
+                                    ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: ElevatedButton(
+                                      child: Text(
+                                        AppLocalizations.of(context)!.addTurn,
+                                      ),
+                                      onPressed: () {
+                                        if (_formKey.currentState!.validate()) {
+                                          _formKey.currentState?.save();
+                                          Navigator.of(context).pop('ok');
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      );
-                    });
-                  }).then((value) => setState(() {
-                    if (value == 'ok') {
-                      _addNewScore(turn, currentHandValue, currentWinner, currentLoser);
-                      _saveTurn();
-                    }
-              }));
-            },
-            tooltip: 'New turn',
-            child: const Icon(Icons.add),
-          ), // This trailing comma makes auto-formatting nicer for build methods.
-        )
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            ).then(
+              (value) => setState(() {
+                if (value == 'ok') {
+                  _addNewScore(
+                    turn,
+                    currentHandValue,
+                    currentWinner,
+                    currentLoser,
+                  );
+                  _saveTurn();
+                }
+              }),
+            );
+          },
+          tooltip: AppLocalizations.of(context)!.addTurn,
+          child: const Icon(Icons.add),
+        ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
-
 }

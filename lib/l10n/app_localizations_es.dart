@@ -12,67 +12,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get game => 'Partida';
 
   @override
-  String get eastPlayer => 'Jugador(a) Este';
+  String positionPlayer(String position) {
+    return 'Jugador(a) $position';
+  }
 
   @override
-  String get westPlayer => 'Jugador(a) Oeste';
+  String get east => 'Este';
 
   @override
-  String get southPlayer => 'Jugador(a) Sur';
+  String get west => 'Oeste';
 
   @override
-  String get northPlayer => 'Jugador(a) Norte';
+  String get south => 'Sur';
 
   @override
-  String get fifthPlayer => 'Jugador(a) extra';
+  String get north => 'Norte';
 
   @override
-  String get east1 => 'Este 1';
-
-  @override
-  String get east2 => 'Este 2';
-
-  @override
-  String get east3 => 'Este 3';
-
-  @override
-  String get east4 => 'Este 4';
-
-  @override
-  String get west1 => 'Oeste 1';
-
-  @override
-  String get west2 => 'Oeste 2';
-
-  @override
-  String get west3 => 'Oeste 3';
-
-  @override
-  String get west4 => 'Oeste 4';
-
-  @override
-  String get south1 => 'Sur 1';
-
-  @override
-  String get south2 => 'Sur 2';
-
-  @override
-  String get south3 => 'Sur 3';
-
-  @override
-  String get south4 => 'Sur 4';
-
-  @override
-  String get north1 => 'Norte 1';
-
-  @override
-  String get north2 => 'Norte 2';
-
-  @override
-  String get north3 => 'Norte 3';
-
-  @override
-  String get north4 => 'Norte 4';
+  String get extra => 'Extra';
 
   @override
   String get continueButton => 'CONTINUAR';
@@ -100,10 +57,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get startGame => 'Comenzar la partida';
 
   @override
-  String get finished => 'Terminada';
+  String get finished => 'Finalizada';
+
+  @override
+  String get loading => 'Cargando...';
+
+  @override
+  String get total => 'Total';
 
   @override
   String get scoreSheet => 'Hoja de puntuación';
+
+  @override
+  String get score => 'Puntos';
 
   @override
   String get deleteLastTurn => 'Borrar último turno';

@@ -106,131 +106,41 @@ abstract class AppLocalizations {
   /// **'Game'**
   String get game;
 
-  /// No description provided for @eastPlayer.
+  /// No description provided for @positionPlayer.
   ///
   /// In en, this message translates to:
-  /// **'East player'**
-  String get eastPlayer;
+  /// **'{position} player'**
+  String positionPlayer(String position);
 
-  /// No description provided for @westPlayer.
+  /// No description provided for @east.
   ///
   /// In en, this message translates to:
-  /// **'West player'**
-  String get westPlayer;
+  /// **'East'**
+  String get east;
 
-  /// No description provided for @southPlayer.
+  /// No description provided for @west.
   ///
   /// In en, this message translates to:
-  /// **'South player'**
-  String get southPlayer;
+  /// **'West'**
+  String get west;
 
-  /// No description provided for @northPlayer.
+  /// No description provided for @south.
   ///
   /// In en, this message translates to:
-  /// **'North player'**
-  String get northPlayer;
+  /// **'South'**
+  String get south;
 
-  /// No description provided for @fifthPlayer.
+  /// No description provided for @north.
   ///
   /// In en, this message translates to:
-  /// **'Extra player'**
-  String get fifthPlayer;
+  /// **'North'**
+  String get north;
 
-  /// No description provided for @east1.
+  /// No description provided for @extra.
   ///
   /// In en, this message translates to:
-  /// **'East 1'**
-  String get east1;
-
-  /// No description provided for @east2.
-  ///
-  /// In en, this message translates to:
-  /// **'East 2'**
-  String get east2;
-
-  /// No description provided for @east3.
-  ///
-  /// In en, this message translates to:
-  /// **'East 3'**
-  String get east3;
-
-  /// No description provided for @east4.
-  ///
-  /// In en, this message translates to:
-  /// **'East 4'**
-  String get east4;
-
-  /// No description provided for @west1.
-  ///
-  /// In en, this message translates to:
-  /// **'West 1'**
-  String get west1;
-
-  /// No description provided for @west2.
-  ///
-  /// In en, this message translates to:
-  /// **'West 2'**
-  String get west2;
-
-  /// No description provided for @west3.
-  ///
-  /// In en, this message translates to:
-  /// **'West 3'**
-  String get west3;
-
-  /// No description provided for @west4.
-  ///
-  /// In en, this message translates to:
-  /// **'West 4'**
-  String get west4;
-
-  /// No description provided for @south1.
-  ///
-  /// In en, this message translates to:
-  /// **'South 1'**
-  String get south1;
-
-  /// No description provided for @south2.
-  ///
-  /// In en, this message translates to:
-  /// **'South 2'**
-  String get south2;
-
-  /// No description provided for @south3.
-  ///
-  /// In en, this message translates to:
-  /// **'South 3'**
-  String get south3;
-
-  /// No description provided for @south4.
-  ///
-  /// In en, this message translates to:
-  /// **'South 4'**
-  String get south4;
-
-  /// No description provided for @north1.
-  ///
-  /// In en, this message translates to:
-  /// **'North 1'**
-  String get north1;
-
-  /// No description provided for @north2.
-  ///
-  /// In en, this message translates to:
-  /// **'North 2'**
-  String get north2;
-
-  /// No description provided for @north3.
-  ///
-  /// In en, this message translates to:
-  /// **'North 3'**
-  String get north3;
-
-  /// No description provided for @north4.
-  ///
-  /// In en, this message translates to:
-  /// **'North 4'**
-  String get north4;
+  /// **'Extra'**
+  String get extra;
 
   /// No description provided for @continueButton.
   ///
@@ -286,11 +196,29 @@ abstract class AppLocalizations {
   /// **'Finished'**
   String get finished;
 
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
+
+  /// No description provided for @total.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get total;
+
   /// No description provided for @scoreSheet.
   ///
   /// In en, this message translates to:
   /// **'Game Score Sheet'**
   String get scoreSheet;
+
+  /// No description provided for @score.
+  ///
+  /// In en, this message translates to:
+  /// **'Score'**
+  String get score;
 
   /// No description provided for @deleteLastTurn.
   ///

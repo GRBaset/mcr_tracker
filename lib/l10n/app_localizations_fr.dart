@@ -12,67 +12,24 @@ class AppLocalizationsFr extends AppLocalizations {
   String get game => 'Partie';
 
   @override
-  String get eastPlayer => 'Joueur Est';
+  String positionPlayer(String position) {
+    return 'Joueur/euse $position';
+  }
 
   @override
-  String get westPlayer => 'Joueur Ouest';
+  String get east => 'Est';
 
   @override
-  String get southPlayer => 'Joueur Sud';
+  String get west => 'Ouest';
 
   @override
-  String get northPlayer => 'Joueur Nord';
+  String get south => 'Sud';
 
   @override
-  String get fifthPlayer => 'Joueur supplémentaire';
+  String get north => 'Nord';
 
   @override
-  String get east1 => 'Est 1';
-
-  @override
-  String get east2 => 'Est 2';
-
-  @override
-  String get east3 => 'Est 3';
-
-  @override
-  String get east4 => 'Est 4';
-
-  @override
-  String get west1 => 'Ouest 1';
-
-  @override
-  String get west2 => 'Ouest 2';
-
-  @override
-  String get west3 => 'Ouest 3';
-
-  @override
-  String get west4 => 'Ouest 4';
-
-  @override
-  String get south1 => 'Sud 1';
-
-  @override
-  String get south2 => 'Sud 2';
-
-  @override
-  String get south3 => 'Sud 3';
-
-  @override
-  String get south4 => 'Sud 4';
-
-  @override
-  String get north1 => 'Nord 1';
-
-  @override
-  String get north2 => 'Nord 2';
-
-  @override
-  String get north3 => 'Nord 3';
-
-  @override
-  String get north4 => 'Nord 4';
+  String get extra => 'Supplémentaire';
 
   @override
   String get continueButton => 'CONTINUER';
@@ -103,7 +60,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get finished => 'Finie';
 
   @override
+  String get loading => 'Chargement en cours...';
+
+  @override
+  String get total => 'Total';
+
+  @override
   String get scoreSheet => 'Feuille de scores';
+
+  @override
+  String get score => 'Score';
 
   @override
   String get deleteLastTurn => 'Supprimer la dernière manche';

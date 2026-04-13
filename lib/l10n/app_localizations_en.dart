@@ -12,67 +12,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get game => 'Game';
 
   @override
-  String get eastPlayer => 'East player';
+  String positionPlayer(String position) {
+    return '$position player';
+  }
 
   @override
-  String get westPlayer => 'West player';
+  String get east => 'East';
 
   @override
-  String get southPlayer => 'South player';
+  String get west => 'West';
 
   @override
-  String get northPlayer => 'North player';
+  String get south => 'South';
 
   @override
-  String get fifthPlayer => 'Extra player';
+  String get north => 'North';
 
   @override
-  String get east1 => 'East 1';
-
-  @override
-  String get east2 => 'East 2';
-
-  @override
-  String get east3 => 'East 3';
-
-  @override
-  String get east4 => 'East 4';
-
-  @override
-  String get west1 => 'West 1';
-
-  @override
-  String get west2 => 'West 2';
-
-  @override
-  String get west3 => 'West 3';
-
-  @override
-  String get west4 => 'West 4';
-
-  @override
-  String get south1 => 'South 1';
-
-  @override
-  String get south2 => 'South 2';
-
-  @override
-  String get south3 => 'South 3';
-
-  @override
-  String get south4 => 'South 4';
-
-  @override
-  String get north1 => 'North 1';
-
-  @override
-  String get north2 => 'North 2';
-
-  @override
-  String get north3 => 'North 3';
-
-  @override
-  String get north4 => 'North 4';
+  String get extra => 'Extra';
 
   @override
   String get continueButton => 'CONTINUE';
@@ -103,7 +60,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get finished => 'Finished';
 
   @override
+  String get loading => 'Loading...';
+
+  @override
+  String get total => 'Total';
+
+  @override
   String get scoreSheet => 'Game Score Sheet';
+
+  @override
+  String get score => 'Score';
 
   @override
   String get deleteLastTurn => 'Delete last turn';

@@ -323,7 +323,7 @@ class _HomePageState extends State<HomePage> {
                                 },
                                 decoration: InputDecoration(
                                   labelText:
-                                      "東 ${AppLocalizations.of(context)!.eastPlayer}",
+                                      "東 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.east)}",
                                   prefixText: "東",
                                 ),
                                 validator: (value) {
@@ -344,7 +344,7 @@ class _HomePageState extends State<HomePage> {
                                 },
                                 decoration: InputDecoration(
                                   labelText:
-                                      "南 ${AppLocalizations.of(context)!.southPlayer}",
+                                      "南 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.south)}",
                                   prefixText: "南",
                                 ),
                                 validator: (value) {
@@ -365,7 +365,7 @@ class _HomePageState extends State<HomePage> {
                                 },
                                 decoration: InputDecoration(
                                   labelText:
-                                      "西 ${AppLocalizations.of(context)!.westPlayer}",
+                                      "西 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.west)}",
                                   prefixText: "西",
                                 ),
                                 validator: (value) {
@@ -386,7 +386,7 @@ class _HomePageState extends State<HomePage> {
                                 },
                                 decoration: InputDecoration(
                                   labelText:
-                                      "北 ${AppLocalizations.of(context)!.northPlayer}",
+                                      "北 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.north)}",
                                   prefixText: "北",
                                 ),
                                 validator: (value) {
@@ -406,8 +406,11 @@ class _HomePageState extends State<HomePage> {
                                   player5 = value!;
                                 },
                                 decoration: InputDecoration(
-                                  labelText:
-                                      AppLocalizations.of(context)!.fifthPlayer,
+                                  labelText: AppLocalizations.of(
+                                    context,
+                                  )!.positionPlayer(
+                                    AppLocalizations.of(context)!.extra,
+                                  ),
                                 ),
                                 validator: (value) {
                                   return null;
