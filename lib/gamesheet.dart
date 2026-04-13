@@ -18,15 +18,15 @@ class _GamePageState extends State<GamePage> {
   List<String> players = [];
   late List<int> playerScores;
   late List<int> gameData;
-  int turn = 0;
+  int hand = 0;
   final List<List<int>> rowsData = [];
   String player1Wind = "";
   String player2Wind = "";
   String player3Wind = "";
   String player4Wind = "";
   String player5Wind = "";
-  String turnEnd = "draw";
-  final List<String> turnEndChoices = ["draw", "self", "offDiscard"];
+  String handEnd = "draw";
+  final List<String> handEndChoices = ["draw", "self", "offDiscard"];
   int currentHandValue = 0;
   int currentWinner = 0;
   String currentWinnerName = "";
@@ -47,12 +47,12 @@ class _GamePageState extends State<GamePage> {
     _loadGames();
   }
 
-  bool _is5thPlayer(int player, int turn) {
-    return players.length == 5 && fivePlayersTurns[player][turn].isEmpty;
+  bool _is5thPlayer(int player, int hand) {
+    return players.length == 5 && fivePlayersHands[player][hand].isEmpty;
   }
 
-  String _translateTurnEnd(String turnEnd) {
-    switch (turnEnd) {
+  String _translateHandEnd(String handEnd) {
+    switch (handEnd) {
       case "draw":
         return AppLocalizations.of(context)!.draw;
       case "self":
@@ -64,27 +64,27 @@ class _GamePageState extends State<GamePage> {
     }
   }
 
-  void _updatePlayersWinds(int turn) {
-    if (turn >= 16) {
+  void _updatePlayersWinds(int hand) {
+    if (hand >= 16) {
       player1Wind = "";
       player2Wind = "";
       player3Wind = "";
       player4Wind = "";
       player5Wind = "";
     } else if (players.length == 5) {
-      player1Wind = windChars[fivePlayersTurns[0][turn]]!;
-      player2Wind = windChars[fivePlayersTurns[1][turn]]!;
-      player3Wind = windChars[fivePlayersTurns[2][turn]]!;
-      player4Wind = windChars[fivePlayersTurns[3][turn]]!;
-      player5Wind = windChars[fivePlayersTurns[4][turn]]!;
+      player1Wind = windChars[fivePlayersHands[0][hand]]!;
+      player2Wind = windChars[fivePlayersHands[1][hand]]!;
+      player3Wind = windChars[fivePlayersHands[2][hand]]!;
+      player4Wind = windChars[fivePlayersHands[3][hand]]!;
+      player5Wind = windChars[fivePlayersHands[4][hand]]!;
     } else {
-      player1Wind = windChars[fourPlayersTurns[0][turn]]!;
-      player2Wind = windChars[fourPlayersTurns[1][turn]]!;
-      player3Wind = windChars[fourPlayersTurns[2][turn]]!;
-      player4Wind = windChars[fourPlayersTurns[3][turn]]!;
+      player1Wind = windChars[fourPlayersHands[0][hand]]!;
+      player2Wind = windChars[fourPlayersHands[1][hand]]!;
+      player3Wind = windChars[fourPlayersHands[2][hand]]!;
+      player4Wind = windChars[fourPlayersHands[3][hand]]!;
     }
     print(
-      "$turn, '$player1Wind' '$player2Wind' '$player3Wind' '$player4Wind' '$player5Wind'",
+      "$hand, '$player1Wind' '$player2Wind' '$player3Wind' '$player4Wind' '$player5Wind'",
     );
   }
 
@@ -96,9 +96,9 @@ class _GamePageState extends State<GamePage> {
       if (data.isNotEmpty) {
         gameData = base64Decode(data[0]);
         print("Loaded game : $gameData");
-        turn = gameData.length ~/ 3;
+        hand = gameData.length ~/ 3;
         players = data.sublist(1);
-        _updatePlayersWinds(turn);
+        _updatePlayersWinds(hand);
         if (players.length == 5) {
           playerScores = [0, 0, 0, 0, 0];
         } else {
@@ -112,11 +112,11 @@ class _GamePageState extends State<GamePage> {
   void _loadDataRows() {
     rowsData.clear();
 
-    for (int turnToAdd = 0; turnToAdd < turn; turnToAdd++) {
-      int handValue = gameData[3 * turnToAdd];
-      int winner = gameData[3 * turnToAdd + 1];
-      int loser = gameData[3 * turnToAdd + 2];
-      _addNewScore(turnToAdd, handValue, winner, loser);
+    for (int handToAdd = 0; handToAdd < hand; handToAdd++) {
+      int handValue = gameData[3 * handToAdd];
+      int winner = gameData[3 * handToAdd + 1];
+      int loser = gameData[3 * handToAdd + 2];
+      _addNewScore(handToAdd, handValue, winner, loser);
     }
   }
 
@@ -127,7 +127,7 @@ class _GamePageState extends State<GamePage> {
     builtDataRows.add(_buildPlayerNames());
     builtDataRows.add(_buildPlayerTotal());
 
-    for (int rowTurn = 0; rowTurn < rowsData.length / 2; rowTurn++) {
+    for (int rowHand = 0; rowHand < rowsData.length / 2; rowHand++) {
       // TURN HAND -8 -8 -18 +x
       builtDataRows.add(
         DataRow(
@@ -135,13 +135,13 @@ class _GamePageState extends State<GamePage> {
             DataCell(
               Container(
                 alignment: Alignment.center,
-                child: Text(turnNamesShort[rowTurn]),
+                child: Text(handNamesShort[rowHand]),
               ),
             ),
             DataCell(
               Container(
                 alignment: Alignment.center,
-                child: Text(rowsData[2 * rowTurn][0].toString()),
+                child: Text(rowsData[2 * rowHand][0].toString()),
               ),
             ),
             for (
@@ -153,7 +153,7 @@ class _GamePageState extends State<GamePage> {
                 Container(
                   alignment: Alignment.center,
                   child: Text(
-                    rowsData[2 * rowTurn][playerIndex + 1].toString(),
+                    rowsData[2 * rowHand][playerIndex + 1].toString(),
                   ),
                 ),
               ),
@@ -180,7 +180,7 @@ class _GamePageState extends State<GamePage> {
                 Container(
                   alignment: Alignment.center,
                   child: Text(
-                    rowsData[2 * rowTurn + 1][playerIndex].toString(),
+                    rowsData[2 * rowHand + 1][playerIndex].toString(),
                   ),
                 ),
               ),
@@ -220,7 +220,7 @@ class _GamePageState extends State<GamePage> {
         DataCell(
           Container(
             alignment: Alignment.center,
-            child: Text(turnNamesShort[turn], style: boldText),
+            child: Text(handNamesShort[hand], style: boldText),
           ),
         ),
         for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
@@ -237,10 +237,10 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  void _addNewScore(int turnToAdd, int handValue, int winner, int loser) {
+  void _addNewScore(int handToAdd, int handValue, int winner, int loser) {
     List<int> delta = [];
     for (int playerNum = 1; playerNum < players.length + 1; playerNum++) {
-      if (handValue == 0 || _is5thPlayer(playerNum - 1, turnToAdd)) {
+      if (handValue == 0 || _is5thPlayer(playerNum - 1, handToAdd)) {
         delta.add(0);
       } else if (loser == 0) {
         // self draw
@@ -268,26 +268,26 @@ class _GamePageState extends State<GamePage> {
     rowsData.add(List.from(playerScores));
   }
 
-  Future<void> _saveTurn() async {
+  Future<void> _saveHand() async {
     final prefs = await SharedPreferences.getInstance();
     gameData += [currentHandValue, currentWinner, currentLoser];
     print("Game : $gameData");
     prefs.setStringList(widget.gameID, [base64Encode(gameData)] + players);
-    turn++;
-    _updatePlayersWinds(turn);
+    hand++;
+    _updatePlayersWinds(hand);
     setState(() {});
   }
 
-  Future<void> _deleteLastTurn() async {
-    if (turn == 0) {
+  Future<void> _deleteLastHand() async {
+    if (hand == 0) {
       return;
     }
     final prefs = await SharedPreferences.getInstance();
     gameData = gameData.sublist(0, gameData.length - 3);
     print("Game : $gameData");
     prefs.setStringList(widget.gameID, [base64Encode(gameData)] + players);
-    turn--;
-    _updatePlayersWinds(turn);
+    hand--;
+    _updatePlayersWinds(hand);
     rowsData.removeRange(rowsData.length - 2, rowsData.length);
     playerScores = List.from(rowsData.last);
     setState(() {});
@@ -381,21 +381,21 @@ class _GamePageState extends State<GamePage> {
       bottomSheet: Padding(
         padding: const EdgeInsets.only(bottom: 20.0, left: 20.0),
         child: Visibility(
-          visible: turn > 0,
+          visible: hand > 0,
           child: ElevatedButton(
             style: const ButtonStyle(
               backgroundColor: WidgetStatePropertyAll<Color>(Colors.red),
             ),
-            onPressed: () => _deleteLastTurn(),
-            child: Text(AppLocalizations.of(context)!.deleteLastTurn),
+            onPressed: () => _deleteLastHand(),
+            child: Text(AppLocalizations.of(context)!.deleteLastHand),
           ),
         ),
       ),
       floatingActionButton: Visibility(
-        visible: turn < 16,
+        visible: hand < 16,
         child: FloatingActionButton(
           onPressed: () {
-            turnEnd = "";
+            handEnd = "";
             currentHandValue = 0;
             currentWinner = 0;
             currentWinnerName = "";
@@ -434,18 +434,18 @@ class _GamePageState extends State<GamePage> {
                                     child: DropdownButtonFormField<String>(
                                       onChanged: (String? value) {
                                         setState(() {
-                                          turnEnd = value!;
+                                          handEnd = value!;
                                         });
                                       },
                                       items:
-                                          turnEndChoices
+                                          handEndChoices
                                               .map<DropdownMenuItem<String>>((
                                                 String value,
                                               ) {
                                                 return DropdownMenuItem<String>(
                                                   value: value,
                                                   child: Text(
-                                                    _translateTurnEnd(value),
+                                                    _translateHandEnd(value),
                                                   ),
                                                 );
                                               })
@@ -457,7 +457,7 @@ class _GamePageState extends State<GamePage> {
                                         labelText:
                                             AppLocalizations.of(
                                               context,
-                                            )!.turnEnd,
+                                            )!.handEnd,
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -470,8 +470,8 @@ class _GamePageState extends State<GamePage> {
                                       },
                                     ),
                                   ),
-                                  if (turnEnd == "self" ||
-                                      turnEnd == "offDiscard")
+                                  if (handEnd == "self" ||
+                                      handEnd == "offDiscard")
                                     Padding(
                                       padding: const EdgeInsets.all(1.0),
                                       child: TextFormField(
@@ -504,8 +504,8 @@ class _GamePageState extends State<GamePage> {
                                         },
                                       ),
                                     ),
-                                  if (turnEnd == "self" ||
-                                      turnEnd == "offDiscard")
+                                  if (handEnd == "self" ||
+                                      handEnd == "offDiscard")
                                     Padding(
                                       padding: const EdgeInsets.all(1.0),
                                       child: DropdownButtonFormField<String>(
@@ -527,7 +527,7 @@ class _GamePageState extends State<GamePage> {
                                                           currentLoserName &&
                                                       !_is5thPlayer(
                                                         players.indexOf(player),
-                                                        turn,
+                                                        hand,
                                                       ),
                                                 )
                                                 .map<DropdownMenuItem<String>>((
@@ -558,7 +558,7 @@ class _GamePageState extends State<GamePage> {
                                         },
                                       ),
                                     ),
-                                  if (turnEnd == "offDiscard" &&
+                                  if (handEnd == "offDiscard" &&
                                       currentWinner > 0)
                                     Padding(
                                       padding: const EdgeInsets.all(1.0),
@@ -581,7 +581,7 @@ class _GamePageState extends State<GamePage> {
                                                           currentWinnerName &&
                                                       !_is5thPlayer(
                                                         players.indexOf(player),
-                                                        turn,
+                                                        hand,
                                                       ),
                                                 )
                                                 .map<DropdownMenuItem<String>>((
@@ -616,7 +616,7 @@ class _GamePageState extends State<GamePage> {
                                     padding: const EdgeInsets.all(8.0),
                                     child: ElevatedButton(
                                       child: Text(
-                                        AppLocalizations.of(context)!.addTurn,
+                                        AppLocalizations.of(context)!.addHand,
                                       ),
                                       onPressed: () {
                                         if (_formKey.currentState!.validate()) {
@@ -640,17 +640,17 @@ class _GamePageState extends State<GamePage> {
               (value) => setState(() {
                 if (value == 'ok') {
                   _addNewScore(
-                    turn,
+                    hand,
                     currentHandValue,
                     currentWinner,
                     currentLoser,
                   );
-                  _saveTurn();
+                  _saveHand();
                 }
               }),
             );
           },
-          tooltip: AppLocalizations.of(context)!.addTurn,
+          tooltip: AppLocalizations.of(context)!.addHand,
           child: const Icon(Icons.add),
         ), // This trailing comma makes auto-formatting nicer for build methods.
       ),

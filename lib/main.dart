@@ -95,11 +95,11 @@ class _HomePageState extends State<HomePage> {
       score[player] = 0;
     }
     List<int> game = base64Decode(games[gameID] ?? "");
-    int turns = game.length ~/ 3;
-    for (int turn = 0; turn < turns; turn++) {
-      int handValue = game[3 * turn];
-      int winner = game[3 * turn + 1];
-      int loser = game[3 * turn + 2];
+    int hands = game.length ~/ 3;
+    for (int hand = 0; hand < hands; hand++) {
+      int handValue = game[3 * hand];
+      int winner = game[3 * hand + 1];
+      int loser = game[3 * hand + 2];
       print("$handValue $winner $loser");
       if (handValue > 0) {
         if (loser > 0) {
@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
           score[winner - 1] = score[winner - 1]! + 3 * 8 + handValue;
           for (int player = 0; player < playersNum; player++) {
             if (player == winner - 1 ||
-                playersNum == 5 && fivePlayersTurns[player][turn].isEmpty) {
+                playersNum == 5 && fivePlayersHands[player][hand].isEmpty) {
               continue;
             }
             if (player == loser - 1) {
@@ -121,7 +121,7 @@ class _HomePageState extends State<HomePage> {
           score[winner - 1] = score[winner - 1]! + 3 * (8 + handValue);
           for (int player = 0; player < playersNum; player++) {
             if (player == winner - 1 ||
-                playersNum == 5 && fivePlayersTurns[player][turn].isEmpty) {
+                playersNum == 5 && fivePlayersHands[player][hand].isEmpty) {
               continue;
             }
             score[player] = score[player]! - 8 - handValue;
@@ -236,7 +236,7 @@ class _HomePageState extends State<HomePage> {
         children: <Widget>[
           ListTile(
             title: Text(
-              '${AppLocalizations.of(context)!.game} ${getLocalizedWindTurn(context, turnNames[gameTurns[gameID]!])}',
+              '${AppLocalizations.of(context)!.game} ${getLocalizedWindTurn(context, handNames[gameTurns[gameID]!])}',
             ),
             subtitle: Text(_getDesc(gameID)),
           ),
