@@ -331,7 +331,10 @@ class _GamePageState extends State<GamePage> {
     hand--;
     _updatePlayersWinds(hand);
     rowsData.removeRange(rowsData.length - 2, rowsData.length);
-    playerScores = List.from(rowsData.last);
+    playerScores =
+        rowsData.isNotEmpty
+            ? List.from(rowsData.last)
+            : List.filled(players.length, 0);
     setState(() {});
   }
 
@@ -416,16 +419,6 @@ class _GamePageState extends State<GamePage> {
           ],
         ),
       ),
-      // Visibility(
-      //   visible: hand > 0,
-      //   child: ElevatedButton(
-      //     style: const ButtonStyle(
-      //       backgroundColor: WidgetStatePropertyAll<Color>(Colors.red),
-      //     ),
-      //     onPressed: () => _deleteLastHand(),
-      //     child: Text(AppLocalizations.of(context)!.deleteLastHand),
-      //   ),
-      // ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
       floatingActionButton: Visibility(
         visible: hand < 16,
