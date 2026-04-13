@@ -220,22 +220,22 @@ abstract class AppLocalizations {
   /// **'Score'**
   String get score;
 
-  /// No description provided for @round.
+  /// No description provided for @hand.
   ///
   /// In en, this message translates to:
-  /// **'Round'**
-  String get round;
+  /// **'Hand'**
+  String get hand;
 
-  /// No description provided for @deleteLastRound.
+  /// No description provided for @deleteLastHand.
   ///
   /// In en, this message translates to:
-  /// **'Delete last round'**
+  /// **'Delete last hand'**
   String get deleteLastHand;
 
-  /// No description provided for @roundEnd.
+  /// No description provided for @handEnd.
   ///
   /// In en, this message translates to:
-  /// **'Round end'**
+  /// **'Hand end'**
   String get handEnd;
 
   /// No description provided for @handValue.
@@ -243,6 +243,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hand value'**
   String get handValue;
+
+  /// No description provided for @value.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get value;
 
   /// No description provided for @winner.
   ///
@@ -262,10 +268,10 @@ abstract class AppLocalizations {
   /// **'Needs to be higher than 8'**
   String get moreThanEight;
 
-  /// No description provided for @addRound.
+  /// No description provided for @addHand.
   ///
   /// In en, this message translates to:
-  /// **'Add round'**
+  /// **'Add hand'**
   String get addHand;
 
   /// No description provided for @draw.

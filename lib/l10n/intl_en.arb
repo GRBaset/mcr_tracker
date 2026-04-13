@@ -32,6 +32,7 @@
   "deleteLastHand": "Delete last hand",
   "handEnd": "Hand end",
   "handValue": "Hand value",
+  "value": "Value",
   "winner": "Winner",
   "giver": "Giver",
   "moreThanEight": "Needs to be higher than 8",

@@ -32,6 +32,7 @@
   "deleteLastHand": "Supprimer la dernière donne",
   "handEnd": "Fin de donne",
   "handValue": "Valeur de la main",
+  "value": "Valeur",
   "winner": "Gagnant",
   "giver": "Donneur",
   "moreThanEight": "Doit être supérieur à 8",

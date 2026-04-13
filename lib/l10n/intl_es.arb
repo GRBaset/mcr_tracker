@@ -32,6 +32,7 @@
   "deleteLastHand": "Borrar última mano",
   "handEnd": "Fin de mano",
   "handValue": "Valor de la mano",
+  "value": "Valor",
   "winner": "Ganada por",
   "giver": "Descarte de",
   "moreThanEight": "Debe ser superior a 8",

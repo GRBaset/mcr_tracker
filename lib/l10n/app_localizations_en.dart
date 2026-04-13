@@ -72,16 +72,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get score => 'Score';
 
   @override
-  String get round => 'Round';
+  String get hand => 'Hand';
 
   @override
-  String get deleteLastHand => 'Delete last round';
+  String get deleteLastHand => 'Delete last hand';
 
   @override
-  String get handEnd => 'Round end';
+  String get handEnd => 'Hand end';
 
   @override
   String get handValue => 'Hand value';
+
+  @override
+  String get value => 'Value';
 
   @override
   String get winner => 'Winner';
@@ -93,7 +96,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreThanEight => 'Needs to be higher than 8';
 
   @override
-  String get addHand => 'Add round';
+  String get addHand => 'Add hand';
 
   @override
   String get draw => 'Draw';

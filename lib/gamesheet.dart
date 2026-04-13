@@ -193,15 +193,26 @@ class _GamePageState extends State<GamePage> {
   }
 
   DataRow _buildPlayerNames() {
+    final double width = MediaQuery.of(context).size.width;
+
     return DataRow(
       cells: [
-        const DataCell(Text("")),
-        const DataCell(Text("")),
+        DataCell(
+          Center(
+            child: Text(AppLocalizations.of(context)!.hand, style: boldText),
+          ),
+        ),
+        DataCell(
+          Center(
+            child: Text(AppLocalizations.of(context)!.value, style: boldText),
+          ),
+        ),
         for (String player in players)
           DataCell(
             Container(
               alignment: Alignment.center,
               child: Text(player, style: boldText),
+              width: (width - 78) / (players.length + 2),
             ),
           ),
       ],
@@ -214,15 +225,10 @@ class _GamePageState extends State<GamePage> {
         DataCell(
           Container(
             alignment: Alignment.center,
-            child: Text(AppLocalizations.of(context)!.score, style: boldText),
-          ),
-        ),
-        DataCell(
-          Container(
-            alignment: Alignment.center,
             child: Text(handNamesShort[hand], style: boldText),
           ),
         ),
+        DataCell(Container(alignment: Alignment.center, child: Text(''))),
         for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
           DataCell(
             Container(
@@ -309,69 +315,58 @@ class _GamePageState extends State<GamePage> {
               scrollDirection: Axis.vertical,
               child:
                   players.isNotEmpty
-                      ? DataTable(
-                        columnSpacing: 10.0,
-                        columns: <DataColumn>[
-                          DataColumn(
-                            label: SizedBox(
-                              width: (width - 70) * 2 / 24,
-                              child: const Text(''),
-                            ),
-                          ),
-                          DataColumn(
-                            label: SizedBox(
-                              width: (width - 70) * 1 / 24,
-                              child: const Text(''),
-                            ),
-                          ),
-                          DataColumn(
-                            label: SizedBox(
-                              width: (width - 70) * 3 / 24,
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: Text(player1Wind),
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: SizedBox(
-                              width: (width - 70) * 3 / 24,
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: Text(player2Wind),
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: SizedBox(
-                              width: (width - 70) * 3 / 24,
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: Text(player3Wind),
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: SizedBox(
-                              width: (width - 70) * 3 / 24,
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: Text(player4Wind),
-                              ),
-                            ),
-                          ),
-                          if (players.length == 5)
+                      ? SizedBox(
+                        width: width,
+                        child: DataTable(
+                          dataRowMaxHeight: double.infinity,
+                          columnSpacing: 5.0,
+                          columns: <DataColumn>[
+                            DataColumn(label: const Text('')),
+                            DataColumn(label: const Text('')),
                             DataColumn(
-                              label: SizedBox(
-                                width: (width - 70) * 3 / 24,
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  child: Text(player5Wind),
+                              label: Expanded(
+                                child: Text(
+                                  player1Wind,
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
-                        ],
-                        rows: _buildDataRows(),
+                            DataColumn(
+                              label: Expanded(
+                                child: Text(
+                                  player2Wind,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Expanded(
+                                child: Text(
+                                  player3Wind,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Expanded(
+                                child: Text(
+                                  player4Wind,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                            if (players.length == 5)
+                              DataColumn(
+                                label: Expanded(
+                                  child: Text(
+                                    player5Wind,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
+                          rows: _buildDataRows(),
+                        ),
                       )
                       : Text(AppLocalizations.of(context)!.loading),
             ),
