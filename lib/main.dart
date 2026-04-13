@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart';
@@ -21,12 +22,27 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MCR Score Tracker',
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomePage(title: 'MCR Score Tracker'),
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        return MaterialApp(
+          title: 'MCR Score Tracker',
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: ThemeData(
+            colorScheme:
+                lightDynamic ?? ColorScheme.fromSeed(seedColor: Colors.purple),
+          ),
+          darkTheme: ThemeData(
+            colorScheme:
+                darkDynamic ??
+                ColorScheme.fromSeed(
+                  seedColor: Colors.purple,
+                  brightness: Brightness.dark,
+                ),
+          ),
+          home: const HomePage(title: 'MCR Score Tracker'),
+        );
+      },
     );
   }
 }

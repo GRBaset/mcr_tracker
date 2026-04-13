@@ -211,8 +211,8 @@ class _GamePageState extends State<GamePage> {
           DataCell(
             Container(
               alignment: Alignment.center,
-              child: Text(player, style: boldText),
               width: (width - 78) / (players.length + 2),
+              child: Text(player, style: boldText),
             ),
           ),
       ],
