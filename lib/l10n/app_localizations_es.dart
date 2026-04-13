@@ -44,17 +44,25 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cancelButton => 'CANCELAR';
 
   @override
-  String get deleteQuestion => '¿Borrar partida?';
+  String deleteQuestion(String object) {
+    return '¿Borrar $object?';
+  }
 
   @override
   String get deleteDialog =>
       '¿Estás absolutamente seguro de querer borrar esta partida? Esta acción es irreversible.';
 
   @override
+  String get deleteHandDialog => '¿Quieres borrar la última mano?';
+
+  @override
   String get required => 'Requerido';
 
   @override
   String get startGame => 'Comenzar la partida';
+
+  @override
+  String get newGame => 'Nueva partida';
 
   @override
   String get finished => 'Finalizada';

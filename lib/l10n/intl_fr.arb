@@ -19,10 +19,20 @@
   "viewButton": "VOIR",
   "deleteButton": "SUPPRIMER",
   "cancelButton": "ANNULER",
-  "deleteQuestion": "Supprimer partie?",
+  "deleteQuestion": "Supprimer {object}?",
+  "@deleteQuestion": {
+    "placeholders": {
+      "object": {
+        "type": "String",
+        "example": "partie"
+      }
+    }
+  },
   "deleteDialog": "Êtes-vous absolument certain de vouler supprimer ce partie? Cette action est irréversible.",
+  "deleteHandDialog": "Vous voulez supprimer la dernière donne?",
   "required": "Requis",
   "startGame": "Commencer la partie",
+  "newGame": "Nouvelle partie",
   "finished": "Finie",
   "loading": "Chargement en cours...",
   "total": "Total",

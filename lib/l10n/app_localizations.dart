@@ -169,14 +169,20 @@ abstract class AppLocalizations {
   /// No description provided for @deleteQuestion.
   ///
   /// In en, this message translates to:
-  /// **'Delete game?'**
-  String get deleteQuestion;
+  /// **'Delete {object}?'**
+  String deleteQuestion(String object);
 
   /// No description provided for @deleteDialog.
   ///
   /// In en, this message translates to:
   /// **'Are you absolutely sure you want to delete this game? This action is irreversible.'**
   String get deleteDialog;
+
+  /// No description provided for @deleteHandDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to delete the last hand?'**
+  String get deleteHandDialog;
 
   /// No description provided for @required.
   ///
@@ -189,6 +195,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start game'**
   String get startGame;
+
+  /// No description provided for @newGame.
+  ///
+  /// In en, this message translates to:
+  /// **'New game'**
+  String get newGame;
 
   /// No description provided for @finished.
   ///

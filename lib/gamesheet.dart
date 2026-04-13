@@ -131,6 +131,7 @@ class _GamePageState extends State<GamePage> {
       // TURN HAND -8 -8 -18 +x
       builtDataRows.add(
         DataRow(
+          onLongPress: _showDeleteHandDialog,
           cells: [
             DataCell(
               Container(
@@ -163,6 +164,7 @@ class _GamePageState extends State<GamePage> {
       // (total)    x   x  x  x  x
       builtDataRows.add(
         DataRow(
+          onLongPress: _showDeleteHandDialog,
           cells: [
             DataCell(
               Container(
@@ -284,6 +286,40 @@ class _GamePageState extends State<GamePage> {
     setState(() {});
   }
 
+  Future<void> _showDeleteHandDialog() async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            AppLocalizations.of(
+              context,
+            )!.deleteQuestion(AppLocalizations.of(context)!.hand.toLowerCase()),
+          ),
+          content: Text(AppLocalizations.of(context)!.deleteHandDialog),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                _deleteLastHand();
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                AppLocalizations.of(context)!.deleteButton,
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context)!.cancelButton),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _deleteLastHand() async {
     if (hand == 0) {
       return;
@@ -305,90 +341,95 @@ class _GamePageState extends State<GamePage> {
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.scoreSheet)),
       body: SizedBox.expand(
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height / 8,
-          ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
           child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child:
-                  players.isNotEmpty
-                      ? SizedBox(
-                        width: width,
-                        child: DataTable(
-                          dataRowMaxHeight: double.infinity,
-                          columnSpacing: 5.0,
-                          columns: <DataColumn>[
-                            DataColumn(label: const Text('')),
-                            DataColumn(label: const Text('')),
+            scrollDirection: Axis.vertical,
+            child:
+                players.isNotEmpty
+                    ? SizedBox(
+                      width: width,
+                      child: DataTable(
+                        dataRowMaxHeight: double.infinity,
+                        columnSpacing: 5.0,
+                        columns: <DataColumn>[
+                          DataColumn(label: const Text('')),
+                          DataColumn(label: const Text('')),
+                          DataColumn(
+                            label: Expanded(
+                              child: Text(
+                                player1Wind,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Expanded(
+                              child: Text(
+                                player2Wind,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Expanded(
+                              child: Text(
+                                player3Wind,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Expanded(
+                              child: Text(
+                                player4Wind,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                          if (players.length == 5)
                             DataColumn(
                               label: Expanded(
                                 child: Text(
-                                  player1Wind,
+                                  player5Wind,
                                   textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
-                            DataColumn(
-                              label: Expanded(
-                                child: Text(
-                                  player2Wind,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Expanded(
-                                child: Text(
-                                  player3Wind,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Expanded(
-                                child: Text(
-                                  player4Wind,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                            if (players.length == 5)
-                              DataColumn(
-                                label: Expanded(
-                                  child: Text(
-                                    player5Wind,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                          ],
-                          rows: _buildDataRows(),
-                        ),
-                      )
-                      : Text(AppLocalizations.of(context)!.loading),
-            ),
+                        ],
+                        rows: _buildDataRows(),
+                      ),
+                    )
+                    : Text(AppLocalizations.of(context)!.loading),
           ),
         ),
       ),
-      bottomSheet: Padding(
-        padding: const EdgeInsets.only(bottom: 20.0, left: 20.0),
-        child: Visibility(
-          visible: hand > 0,
-          child: ElevatedButton(
-            style: const ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll<Color>(Colors.red),
+      bottomNavigationBar: BottomAppBar(
+        elevation: 0,
+        child: Row(
+          children: <Widget>[
+            IconButton(
+              onPressed: _showDeleteHandDialog,
+              icon: Icon(Icons.delete),
+              tooltip: AppLocalizations.of(context)!.deleteLastHand,
             ),
-            onPressed: () => _deleteLastHand(),
-            child: Text(AppLocalizations.of(context)!.deleteLastHand),
-          ),
+          ],
         ),
       ),
+      // Visibility(
+      //   visible: hand > 0,
+      //   child: ElevatedButton(
+      //     style: const ButtonStyle(
+      //       backgroundColor: WidgetStatePropertyAll<Color>(Colors.red),
+      //     ),
+      //     onPressed: () => _deleteLastHand(),
+      //     child: Text(AppLocalizations.of(context)!.deleteLastHand),
+      //   ),
+      // ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
       floatingActionButton: Visibility(
         visible: hand < 16,
-        child: FloatingActionButton(
+        child: FloatingActionButton.extended(
           onPressed: () {
             handEnd = "";
             currentHandValue = 0;
@@ -396,242 +437,7 @@ class _GamePageState extends State<GamePage> {
             currentWinnerName = "";
             currentLoser = 0;
             currentLoserName = "";
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return StatefulBuilder(
-                  builder: (context, StateSetter setState) {
-                    return AlertDialog(
-                      content: Stack(
-                        clipBehavior: Clip.none,
-                        children: <Widget>[
-                          Positioned(
-                            right: -40.0,
-                            top: -40.0,
-                            child: InkResponse(
-                              onTap: () {
-                                Navigator.of(context).pop('close');
-                              },
-                              child: const CircleAvatar(
-                                backgroundColor: Colors.red,
-                                child: Icon(Icons.close),
-                              ),
-                            ),
-                          ),
-                          Form(
-                            key: _formKey,
-                            child: SingleChildScrollView(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.all(1.0),
-                                    child: DropdownButtonFormField<String>(
-                                      onChanged: (String? value) {
-                                        setState(() {
-                                          handEnd = value!;
-                                        });
-                                      },
-                                      items:
-                                          handEndChoices
-                                              .map<DropdownMenuItem<String>>((
-                                                String value,
-                                              ) {
-                                                return DropdownMenuItem<String>(
-                                                  value: value,
-                                                  child: Text(
-                                                    _translateHandEnd(value),
-                                                  ),
-                                                );
-                                              })
-                                              .toList(),
-                                      onSaved: (value) {
-                                        // TODO SAVE VALUE
-                                      },
-                                      decoration: InputDecoration(
-                                        labelText:
-                                            AppLocalizations.of(
-                                              context,
-                                            )!.handEnd,
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return AppLocalizations.of(
-                                            context,
-                                          )!.required;
-                                        }
-                                        // TODO CHECK
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  if (handEnd == "self" ||
-                                      handEnd == "offDiscard")
-                                    Padding(
-                                      padding: const EdgeInsets.all(1.0),
-                                      child: TextFormField(
-                                        keyboardType: TextInputType.number,
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter.allow(
-                                            RegExp(r'\d'),
-                                          ),
-                                          FilteringTextInputFormatter
-                                              .digitsOnly,
-                                        ],
-                                        onSaved: (value) {
-                                          currentHandValue = int.parse(value!);
-                                        },
-                                        decoration: InputDecoration(
-                                          labelText:
-                                              AppLocalizations.of(
-                                                context,
-                                              )!.handValue,
-                                        ),
-                                        validator: (value) {
-                                          if (value == null ||
-                                              value.isEmpty ||
-                                              int.parse(value) < 8) {
-                                            return AppLocalizations.of(
-                                              context,
-                                            )!.moreThanEight;
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ),
-                                  if (handEnd == "self" ||
-                                      handEnd == "offDiscard")
-                                    Padding(
-                                      padding: const EdgeInsets.all(1.0),
-                                      child: DropdownButtonFormField<String>(
-                                        onChanged: (String? value) {
-                                          setState(() {
-                                            currentWinnerName = value!;
-                                            currentWinner =
-                                                players.indexOf(
-                                                  currentWinnerName,
-                                                ) +
-                                                1;
-                                          });
-                                        },
-                                        items:
-                                            players
-                                                .where(
-                                                  (player) =>
-                                                      player !=
-                                                          currentLoserName &&
-                                                      !_is5thPlayer(
-                                                        players.indexOf(player),
-                                                        hand,
-                                                      ),
-                                                )
-                                                .map<DropdownMenuItem<String>>((
-                                                  String value,
-                                                ) {
-                                                  return DropdownMenuItem<
-                                                    String
-                                                  >(
-                                                    value: value,
-                                                    child: Text(value),
-                                                  );
-                                                })
-                                                .toList(),
-                                        onSaved: (value) {},
-                                        decoration: InputDecoration(
-                                          labelText:
-                                              AppLocalizations.of(
-                                                context,
-                                              )!.winner,
-                                        ),
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return AppLocalizations.of(
-                                              context,
-                                            )!.required;
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ),
-                                  if (handEnd == "offDiscard" &&
-                                      currentWinner > 0)
-                                    Padding(
-                                      padding: const EdgeInsets.all(1.0),
-                                      child: DropdownButtonFormField<String>(
-                                        onChanged: (String? value) {
-                                          setState(() {
-                                            currentLoserName = value!;
-                                            currentLoser =
-                                                players.indexOf(
-                                                  currentLoserName,
-                                                ) +
-                                                1;
-                                          });
-                                        },
-                                        items:
-                                            players
-                                                .where(
-                                                  (player) =>
-                                                      player !=
-                                                          currentWinnerName &&
-                                                      !_is5thPlayer(
-                                                        players.indexOf(player),
-                                                        hand,
-                                                      ),
-                                                )
-                                                .map<DropdownMenuItem<String>>((
-                                                  String value,
-                                                ) {
-                                                  return DropdownMenuItem<
-                                                    String
-                                                  >(
-                                                    value: value,
-                                                    child: Text(value),
-                                                  );
-                                                })
-                                                .toList(),
-                                        onSaved: (value) {},
-                                        decoration: InputDecoration(
-                                          labelText:
-                                              AppLocalizations.of(
-                                                context,
-                                              )!.giver,
-                                        ),
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return AppLocalizations.of(
-                                              context,
-                                            )!.required;
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: ElevatedButton(
-                                      child: Text(
-                                        AppLocalizations.of(context)!.addHand,
-                                      ),
-                                      onPressed: () {
-                                        if (_formKey.currentState!.validate()) {
-                                          _formKey.currentState?.save();
-                                          Navigator.of(context).pop('ok');
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ).then(
+            _showHandEndDialog().then(
               (value) => setState(() {
                 if (value == 'ok') {
                   _addNewScore(
@@ -645,10 +451,219 @@ class _GamePageState extends State<GamePage> {
               }),
             );
           },
-          tooltip: AppLocalizations.of(context)!.addHand,
-          child: const Icon(Icons.add),
+          icon: const Icon(Icons.add),
+          label: Text(AppLocalizations.of(context)!.addHand),
         ), // This trailing comma makes auto-formatting nicer for build methods.
       ),
+    );
+  }
+
+  Future<dynamic> _showHandEndDialog() {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, StateSetter setState) {
+            return AlertDialog(
+              content: Stack(
+                clipBehavior: Clip.none,
+                children: <Widget>[
+                  Positioned(
+                    right: -40.0,
+                    top: -40.0,
+                    child: InkResponse(
+                      onTap: () {
+                        Navigator.of(context).pop('close');
+                      },
+                      child: const CircleAvatar(
+                        backgroundColor: Colors.red,
+                        child: Icon(Icons.close),
+                      ),
+                    ),
+                  ),
+                  Form(
+                    key: _formKey,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: DropdownButtonFormField<String>(
+                              onChanged: (String? value) {
+                                setState(() {
+                                  handEnd = value!;
+                                });
+                              },
+                              items:
+                                  handEndChoices.map<DropdownMenuItem<String>>((
+                                    String value,
+                                  ) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(_translateHandEnd(value)),
+                                    );
+                                  }).toList(),
+                              onSaved: (value) {
+                                // TODO SAVE VALUE
+                              },
+                              decoration: InputDecoration(
+                                labelText:
+                                    AppLocalizations.of(context)!.handEnd,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return AppLocalizations.of(context)!.required;
+                                }
+                                // TODO CHECK
+                                return null;
+                              },
+                            ),
+                          ),
+                          if (handEnd == "self" || handEnd == "offDiscard")
+                            Padding(
+                              padding: const EdgeInsets.all(1.0),
+                              child: TextFormField(
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'\d'),
+                                  ),
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                onSaved: (value) {
+                                  currentHandValue = int.parse(value!);
+                                },
+                                decoration: InputDecoration(
+                                  labelText:
+                                      AppLocalizations.of(context)!.handValue,
+                                ),
+                                validator: (value) {
+                                  if (value == null ||
+                                      value.isEmpty ||
+                                      int.parse(value) < 8) {
+                                    return AppLocalizations.of(
+                                      context,
+                                    )!.moreThanEight;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          if (handEnd == "self" || handEnd == "offDiscard")
+                            Padding(
+                              padding: const EdgeInsets.all(1.0),
+                              child: DropdownButtonFormField<String>(
+                                onChanged: (String? value) {
+                                  setState(() {
+                                    currentWinnerName = value!;
+                                    currentWinner =
+                                        players.indexOf(currentWinnerName) + 1;
+                                  });
+                                },
+                                items:
+                                    players
+                                        .where(
+                                          (player) =>
+                                              player != currentLoserName &&
+                                              !_is5thPlayer(
+                                                players.indexOf(player),
+                                                hand,
+                                              ),
+                                        )
+                                        .map<DropdownMenuItem<String>>((
+                                          String value,
+                                        ) {
+                                          return DropdownMenuItem<String>(
+                                            value: value,
+                                            child: Text(value),
+                                          );
+                                        })
+                                        .toList(),
+                                onSaved: (value) {},
+                                decoration: InputDecoration(
+                                  labelText:
+                                      AppLocalizations.of(context)!.winner,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return AppLocalizations.of(
+                                      context,
+                                    )!.required;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          if (handEnd == "offDiscard" && currentWinner > 0)
+                            Padding(
+                              padding: const EdgeInsets.all(1.0),
+                              child: DropdownButtonFormField<String>(
+                                onChanged: (String? value) {
+                                  setState(() {
+                                    currentLoserName = value!;
+                                    currentLoser =
+                                        players.indexOf(currentLoserName) + 1;
+                                  });
+                                },
+                                items:
+                                    players
+                                        .where(
+                                          (player) =>
+                                              player != currentWinnerName &&
+                                              !_is5thPlayer(
+                                                players.indexOf(player),
+                                                hand,
+                                              ),
+                                        )
+                                        .map<DropdownMenuItem<String>>((
+                                          String value,
+                                        ) {
+                                          return DropdownMenuItem<String>(
+                                            value: value,
+                                            child: Text(value),
+                                          );
+                                        })
+                                        .toList(),
+                                onSaved: (value) {},
+                                decoration: InputDecoration(
+                                  labelText:
+                                      AppLocalizations.of(context)!.giver,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return AppLocalizations.of(
+                                      context,
+                                    )!.required;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              child: Text(
+                                AppLocalizations.of(context)!.addHand,
+                              ),
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  _formKey.currentState?.save();
+                                  Navigator.of(context).pop('ok');
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

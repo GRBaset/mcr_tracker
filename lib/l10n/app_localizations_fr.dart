@@ -44,17 +44,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get cancelButton => 'ANNULER';
 
   @override
-  String get deleteQuestion => 'Supprimer partie?';
+  String deleteQuestion(String object) {
+    return 'Supprimer $object?';
+  }
 
   @override
   String get deleteDialog =>
       'Êtes-vous absolument certain de vouler supprimer ce partie? Cette action est irréversible.';
 
   @override
+  String get deleteHandDialog => 'Vous voulez supprimer la dernière donne?';
+
+  @override
   String get required => 'Requis';
 
   @override
   String get startGame => 'Commencer la partie';
+
+  @override
+  String get newGame => 'Nouvelle partie';
 
   @override
   String get finished => 'Finie';

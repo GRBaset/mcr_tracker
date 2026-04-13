@@ -189,7 +189,11 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.deleteQuestion),
+          title: Text(
+            AppLocalizations.of(
+              context,
+            )!.deleteQuestion(AppLocalizations.of(context)!.game.toLowerCase()),
+          ),
           content: Text(AppLocalizations.of(context)!.deleteDialog),
           actions: <Widget>[
             TextButton(
@@ -303,174 +307,171 @@ class _HomePageState extends State<HomePage> {
           child: SingleChildScrollView(child: Column(children: gameCards)),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                content: Stack(
-                  clipBehavior: Clip.none,
-                  children: <Widget>[
-                    Positioned(
-                      right: -40.0,
-                      top: -40.0,
-                      child: InkResponse(
-                        onTap: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const CircleAvatar(
-                          backgroundColor: Colors.red,
-                          child: Icon(Icons.close),
-                        ),
-                      ),
-                    ),
-                    Form(
-                      key: _formKey,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.all(1.0),
-                              child: TextFormField(
-                                onSaved: (value) {
-                                  player1 = value!;
-                                },
-                                decoration: InputDecoration(
-                                  labelText:
-                                      "東 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.east)}",
-                                  prefixText: "東",
-                                ),
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return AppLocalizations.of(
-                                      context,
-                                    )!.required;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(1.0),
-                              child: TextFormField(
-                                onSaved: (value) {
-                                  player2 = value!;
-                                },
-                                decoration: InputDecoration(
-                                  labelText:
-                                      "南 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.south)}",
-                                  prefixText: "南",
-                                ),
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return AppLocalizations.of(
-                                      context,
-                                    )!.required;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(1.0),
-                              child: TextFormField(
-                                onSaved: (value) {
-                                  player3 = value!;
-                                },
-                                decoration: InputDecoration(
-                                  labelText:
-                                      "西 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.west)}",
-                                  prefixText: "西",
-                                ),
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return AppLocalizations.of(
-                                      context,
-                                    )!.required;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(1.0),
-                              child: TextFormField(
-                                onSaved: (value) {
-                                  player4 = value!;
-                                },
-                                decoration: InputDecoration(
-                                  labelText:
-                                      "北 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.north)}",
-                                  prefixText: "北",
-                                ),
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return AppLocalizations.of(
-                                      context,
-                                    )!.required;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(1.0),
-                              child: TextFormField(
-                                onSaved: (value) {
-                                  player5 = value!;
-                                },
-                                decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(
-                                    context,
-                                  )!.positionPlayer(
-                                    AppLocalizations.of(context)!.extra,
-                                  ),
-                                ),
-                                validator: (value) {
-                                  return null;
-                                },
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ElevatedButton(
-                                child: Text(
-                                  AppLocalizations.of(context)!.startGame,
-                                ),
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    _formKey.currentState?.save();
-                                    String gameID = uuid.v4();
-                                    _createGame(
-                                      gameID,
-                                      player1,
-                                      player2,
-                                      player3,
-                                      player4,
-                                      player5,
-                                    ).then((value) {
-                                      Navigator.of(context).pop();
-                                      _navigateToGame(gameID);
-                                    });
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showNewGameDialog,
+        icon: const Icon(Icons.add),
+        label: Text(
+          AppLocalizations.of(context)!.newGame,
+          style: TextStyle(
+            fontSize: TextTheme.of(context).titleMedium?.fontSize,
+          ),
+        ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  Future<dynamic> _showNewGameDialog() async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Stack(
+            clipBehavior: Clip.none,
+            children: <Widget>[
+              Positioned(
+                right: -40.0,
+                top: -40.0,
+                child: InkResponse(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const CircleAvatar(
+                    backgroundColor: Colors.red,
+                    child: Icon(Icons.close),
+                  ),
+                ),
+              ),
+              Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(1.0),
+                        child: TextFormField(
+                          onSaved: (value) {
+                            player1 = value!;
+                          },
+                          decoration: InputDecoration(
+                            labelText:
+                                "東 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.east)}",
+                            prefixText: "東",
+                          ),
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return AppLocalizations.of(context)!.required;
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(1.0),
+                        child: TextFormField(
+                          onSaved: (value) {
+                            player2 = value!;
+                          },
+                          decoration: InputDecoration(
+                            labelText:
+                                "南 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.south)}",
+                            prefixText: "南",
+                          ),
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return AppLocalizations.of(context)!.required;
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(1.0),
+                        child: TextFormField(
+                          onSaved: (value) {
+                            player3 = value!;
+                          },
+                          decoration: InputDecoration(
+                            labelText:
+                                "西 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.west)}",
+                            prefixText: "西",
+                          ),
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return AppLocalizations.of(context)!.required;
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(1.0),
+                        child: TextFormField(
+                          onSaved: (value) {
+                            player4 = value!;
+                          },
+                          decoration: InputDecoration(
+                            labelText:
+                                "北 ${AppLocalizations.of(context)!.positionPlayer(AppLocalizations.of(context)!.north)}",
+                            prefixText: "北",
+                          ),
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return AppLocalizations.of(context)!.required;
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(1.0),
+                        child: TextFormField(
+                          onSaved: (value) {
+                            player5 = value!;
+                          },
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(
+                              context,
+                            )!.positionPlayer(
+                              AppLocalizations.of(context)!.extra,
+                            ),
+                          ),
+                          validator: (value) {
+                            return null;
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ElevatedButton(
+                          child: Text(AppLocalizations.of(context)!.startGame),
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              _formKey.currentState?.save();
+                              String gameID = uuid.v4();
+                              _createGame(
+                                gameID,
+                                player1,
+                                player2,
+                                player3,
+                                player4,
+                                player5,
+                              ).then((value) {
+                                Navigator.of(context).pop();
+                                _navigateToGame(gameID);
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

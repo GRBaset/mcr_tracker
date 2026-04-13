@@ -19,10 +19,20 @@
   "viewButton": "VER",
   "deleteButton": "BORRAR",
   "cancelButton": "CANCELAR",
-  "deleteQuestion": "¿Borrar partida?",
+  "deleteQuestion": "¿Borrar {object}?",
+  "@deleteQuestion": {
+    "placeholders": {
+      "object": {
+        "type": "String",
+        "example": "juego"
+      }
+    }
+  },
   "deleteDialog": "¿Estás absolutamente seguro de querer borrar esta partida? Esta acción es irreversible.",
+  "deleteHandDialog": "¿Quieres borrar la última mano?",
   "required": "Requerido",
   "startGame": "Comenzar la partida",
+  "newGame": "Nueva partida",
   "finished": "Finalizada",
   "loading": "Cargando...",
   "total": "Total",
