@@ -164,6 +164,13 @@ class _GamePageState extends State<GamePage> {
       // (total)    x   x  x  x  x
       builtDataRows.add(
         DataRow(
+          color: WidgetStateProperty.resolveWith<Color?>((
+            Set<WidgetState> states,
+          ) {
+            return Theme.of(
+              context,
+            ).colorScheme.secondary.withValues(alpha: 0.15);
+          }),
           onLongPress: _showDeleteHandDialog,
           cells: [
             DataCell(
@@ -198,6 +205,9 @@ class _GamePageState extends State<GamePage> {
     final double width = MediaQuery.of(context).size.width;
 
     return DataRow(
+      color: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        return Theme.of(context).colorScheme.primary.withValues(alpha: 0.5);
+      }),
       cells: [
         DataCell(
           Center(
@@ -223,11 +233,14 @@ class _GamePageState extends State<GamePage> {
 
   DataRow _buildPlayerTotal() {
     return DataRow(
+      color: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        return Theme.of(context).colorScheme.primary.withValues(alpha: 0.3);
+      }),
       cells: [
         DataCell(
           Container(
             alignment: Alignment.center,
-            child: Text(handNamesShort[hand], style: boldText),
+            child: Text('Current', style: boldText),
           ),
         ),
         DataCell(Container(alignment: Alignment.center, child: Text(''))),
@@ -356,12 +369,21 @@ class _GamePageState extends State<GamePage> {
                         dataRowMaxHeight: double.infinity,
                         columnSpacing: 5.0,
                         columns: <DataColumn>[
-                          DataColumn(label: const Text('')),
+                          DataColumn(
+                            label: Expanded(
+                              child: Text(
+                                handNamesShort[hand],
+                                style: boldText,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
                           DataColumn(label: const Text('')),
                           DataColumn(
                             label: Expanded(
                               child: Text(
                                 player1Wind,
+                                style: boldText,
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -370,6 +392,7 @@ class _GamePageState extends State<GamePage> {
                             label: Expanded(
                               child: Text(
                                 player2Wind,
+                                style: boldText,
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -378,6 +401,7 @@ class _GamePageState extends State<GamePage> {
                             label: Expanded(
                               child: Text(
                                 player3Wind,
+                                style: boldText,
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -386,6 +410,7 @@ class _GamePageState extends State<GamePage> {
                             label: Expanded(
                               child: Text(
                                 player4Wind,
+                                style: boldText,
                                 textAlign: TextAlign.center,
                               ),
                             ),
