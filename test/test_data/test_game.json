@@ -1,0 +1,41 @@
+{
+    "players": [
+        {
+            "name": "1",
+            "initialPosition": 0
+        },
+        {
+            "name": "2",
+            "initialPosition": 1
+        },
+        {
+            "name": "3",
+            "initialPosition": 2
+        },
+        {
+            "name": "4",
+            "initialPosition": 3
+        }
+    ],
+    "finished": false,
+    "hands": [
+        {
+            "endKind": "draw",
+            "value": null,
+            "winner": null,
+            "giver": null
+        },
+        {
+            "endKind": "selfDraw",
+            "value": 8,
+            "winner": 0,
+            "giver": null
+        },
+        {
+            "endKind": "offDiscard",
+            "value": 16,
+            "winner": 2,
+            "giver": 0
+        }
+    ]
+}
