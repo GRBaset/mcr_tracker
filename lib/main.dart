@@ -1,15 +1,15 @@
 import 'dart:collection';
+import 'dart:developer' as developer;
 
+import 'package:collection/collection.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mcr_tracker/src/game.dart';
+import 'package:mcr_tracker/src/game_storage.dart';
 import 'l10n/app_localizations.dart';
-import 'dart:convert';
 
 import 'package:uuid/uuid.dart';
-import 'constants.dart';
 import 'gamesheet.dart';
-import 'locale_utils.dart';
 
 var uuid = const Uuid();
 
@@ -57,20 +57,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _formKey = GlobalKey<FormState>();
-  String player1 = "";
-  String player2 = "";
-  String player3 = "";
-  String player4 = "";
-  String player5 = "";
-  late List<String> gameIDs;
-  final Map<String, String> games = HashMap();
-  final Map<String, int> gameTurns = HashMap();
-  final Map<String, List<String>> gamesPlayers = HashMap();
-  final gameCards = <Widget>[];
+  final Map<String, Widget> gameCards = HashMap();
+  final GameStorage storage = GameStorage();
 
   @override
   void initState() {
     super.initState();
+
     _loadGames();
   }
 
@@ -82,109 +75,42 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _loadGames() async {
-    final prefs = await SharedPreferences.getInstance();
-    games.clear();
-    gameTurns.clear();
-    gameCards.clear();
+    await storage.loadAllGames();
 
-    setState(() {
-      gameIDs = prefs.getKeys().toList();
-      print("Loaded games : $gameIDs");
-      for (String game in gameIDs) {
-        List<String> gameData = prefs.getStringList(game) ?? [];
-        if (gameData.isNotEmpty) {
-          games[game] = gameData[0];
-          gamesPlayers[game] = gameData.sublist(1);
-          gameTurns[game] = base64Decode(gameData[0]).length ~/ 3;
-          Widget card = _getNewCard(game);
-          gameCards.add(card);
-        }
-      }
-    });
-    print(gameIDs);
+    for (final String gameId in storage.games.keys.sorted()) {
+      Widget card = await _getNewCard(gameId);
+      gameCards[gameId] = card;
+    }
+
+    setState(() {});
   }
 
-  Map<int, int> _getScore(String gameID) {
-    Map<int, int> score = HashMap();
-    int playersNum = gamesPlayers[gameID]!.length;
-    for (int player = 0; player < playersNum; player++) {
-      score[player] = 0;
-    }
-    List<int> game = base64Decode(games[gameID] ?? "");
-    int hands = game.length ~/ 3;
-    for (int hand = 0; hand < hands; hand++) {
-      int handValue = game[3 * hand];
-      int winner = game[3 * hand + 1];
-      int loser = game[3 * hand + 2];
-      print("$handValue $winner $loser");
-      if (handValue > 0) {
-        if (loser > 0) {
-          // win off discard
-          score[winner - 1] = score[winner - 1]! + 3 * 8 + handValue;
-          for (int player = 0; player < playersNum; player++) {
-            if (player == winner - 1 ||
-                playersNum == 5 && fivePlayersHands[player][hand].isEmpty) {
-              continue;
-            }
-            if (player == loser - 1) {
-              score[player] = score[player]! - 8 - handValue;
-            } else {
-              score[player] = score[player]! - 8;
-            }
-          }
-        } else {
-          // self draw
-          score[winner - 1] = score[winner - 1]! + 3 * (8 + handValue);
-          for (int player = 0; player < playersNum; player++) {
-            if (player == winner - 1 ||
-                playersNum == 5 && fivePlayersHands[player][hand].isEmpty) {
-              continue;
-            }
-            score[player] = score[player]! - 8 - handValue;
-          }
-        }
-      }
-      print(score);
-    }
-    return score;
-  }
+  String _getDesc(Game game) {
+    String desc = "";
+    final PlayerScores playerTotalScores = game.playerTotalScores();
+    developer.log(playerTotalScores.toString());
 
-  String _getDesc(String gameID) {
-    var desc = "";
-    var scores = _getScore(gameID);
-    print(scores);
-    int playersNum = gamesPlayers[gameID]!.length;
-    for (int player = 0; player < playersNum; player++) {
-      desc += "${gamesPlayers[gameID]![player]} ${scores[player]}     ";
+    for (final Player player in game.playersSorted) {
+      desc += "${player.name} ${playerTotalScores[player]}     ";
     }
     return desc;
   }
 
-  Future<void> _createGame(
-    String gameID,
-    String player1,
-    String player2,
-    String player3,
-    String player4,
-    String player5,
-  ) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> players = [player1, player2, player3, player4];
-    if (player5.isNotEmpty) {
-      players.add(player5);
-    }
-    gameIDs.add(gameID);
-    gamesPlayers[gameID] = players;
-    games[gameID] = "";
-    gameTurns[gameID] = 0;
-    List<String> data = [""] + players;
-    prefs.setStringList(gameID, data);
-    gameCards.add(_getNewCard(gameID));
-    print("Created game $gameID");
-    setState(() {});
+  Future<String> _createGame(Map<Position, String> playerNames) async {
+    final Set<Player> players = {};
+    playerNames.forEach((initialPosition, name) {
+      if (name.isNotEmpty) {
+        players.add(Player(name: name, initialPosition: initialPosition));
+      }
+    });
+
+    final String gameId = await storage.newGame(players: players);
+    developer.log('Created game $gameId');
+
+    return gameId;
   }
 
-  Future<void> _showDeleteGameDialog(String gameID) async {
+  Future<void> _deleteGameDialog(String gameId) async {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -198,7 +124,7 @@ class _HomePageState extends State<HomePage> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                _deleteGame(gameID);
+                _deleteGame(gameId);
                 Navigator.of(context).pop();
               },
               child: Text(
@@ -218,47 +144,34 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> _deleteGame(String gameID) async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.remove(gameID);
-    gameIDs.remove(gameID);
-    games.remove(gameID);
-    gameTurns.remove(gameID);
-    gamesPlayers.remove(gameID);
-    gameCards.removeWhere((card) => card.key == Key(gameID));
-    print("Deleted game $gameID");
+  Future<void> _deleteGame(String gameId) async {
+    gameCards.remove(gameId);
+    storage.deleteGame(gameId: gameId);
+    developer.log("Deleted game $gameId");
     setState(() {});
   }
 
-  void _reloadGame(String gameID) async {
-    print("Reloading game $gameID");
-    final prefs = await SharedPreferences.getInstance();
-    List<String> gameData = prefs.getStringList(gameID) ?? [];
-    if (gameData.isNotEmpty) {
-      games[gameID] = gameData[0];
-      gamesPlayers[gameID] = gameData.sublist(1);
-      gameTurns[gameID] = base64Decode(gameData[0]).length ~/ 3;
-      int index = gameCards.indexWhere((card) => card.key == Key(gameID));
-      if (index >= 0) {
-        gameCards.removeAt(index);
-      }
-      Widget newCard = _getNewCard(gameID);
-      gameCards.insert(index, newCard);
-      setState(() {});
-    }
+  void _reloadGame(String gameId) async {
+    developer.log("Reloading game $gameId");
+    Widget newCard = await _getNewCard(gameId);
+    gameCards[gameId] = newCard;
+    setState(() {});
   }
 
-  Widget _getNewCard(String gameID) {
+  Future<Widget> _getNewCard(String gameId) async {
+    final Game game = await storage.loadGame(gameId: gameId);
+
+    if (!mounted) throw StateError('Context not mounted');
     return Card(
-      key: Key(gameID),
+      key: Key(gameId),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           ListTile(
             title: Text(
-              '${AppLocalizations.of(context)!.game} ${getLocalizedWindTurn(context, handNames[gameTurns[gameID]!])}',
+              '${AppLocalizations.of(context)!.game} ${_localizedHandPosition(game)}',
             ),
-            subtitle: Text(_getDesc(gameID)),
+            subtitle: Text(_getDesc(game)),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -270,16 +183,16 @@ class _HomePageState extends State<HomePage> {
                   style: TextStyle(color: Colors.red),
                 ),
                 onPressed: () {
-                  _showDeleteGameDialog(gameID);
+                  _deleteGameDialog(gameId);
                 },
               ),
               const Spacer(),
               TextButton(
                 child:
-                    gameTurns[gameID]! < 16
-                        ? Text(AppLocalizations.of(context)!.continueButton)
-                        : Text(AppLocalizations.of(context)!.viewButton),
-                onPressed: () => _navigateToGame(gameID),
+                    game.finished
+                        ? Text(AppLocalizations.of(context)!.viewButton)
+                        : Text(AppLocalizations.of(context)!.continueButton),
+                onPressed: () => _navigateToGame(gameId),
               ),
               const SizedBox(width: 8),
             ],
@@ -289,12 +202,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> _navigateToGame(String gameID) async {
+  Future<void> _navigateToGame(String gameId) async {
+    final Game game = await storage.loadGame(gameId: gameId);
+
+    if (!mounted) throw StateError('Context not mounted');
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => GamePage(gameID: gameID)),
+      MaterialPageRoute(builder: (context) => GamePage(game: game)),
     );
-    _reloadGame(gameID);
+    _reloadGame(gameId);
   }
 
   @override
@@ -304,11 +220,13 @@ class _HomePageState extends State<HomePage> {
       body: Center(
         child: Container(
           alignment: Alignment.topCenter,
-          child: SingleChildScrollView(child: Column(children: gameCards)),
+          child: SingleChildScrollView(
+            child: Column(children: gameCards.values.toList()),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showNewGameDialog,
+        onPressed: _newGameDialog,
         icon: const Icon(Icons.add),
         label: Text(
           AppLocalizations.of(context)!.newGame,
@@ -320,7 +238,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<dynamic> _showNewGameDialog() async {
+  Future<dynamic> _newGameDialog() async {
+    final Map<Position, String> playerNames = HashMap();
+
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -351,7 +271,7 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.all(1.0),
                         child: TextFormField(
                           onSaved: (value) {
-                            player1 = value!;
+                            playerNames[Position.east] = value!;
                           },
                           decoration: InputDecoration(
                             labelText:
@@ -370,7 +290,7 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.all(1.0),
                         child: TextFormField(
                           onSaved: (value) {
-                            player2 = value!;
+                            playerNames[Position.south] = value!;
                           },
                           decoration: InputDecoration(
                             labelText:
@@ -389,7 +309,7 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.all(1.0),
                         child: TextFormField(
                           onSaved: (value) {
-                            player3 = value!;
+                            playerNames[Position.west] = value!;
                           },
                           decoration: InputDecoration(
                             labelText:
@@ -408,7 +328,7 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.all(1.0),
                         child: TextFormField(
                           onSaved: (value) {
-                            player4 = value!;
+                            playerNames[Position.north] = value!;
                           },
                           decoration: InputDecoration(
                             labelText:
@@ -427,7 +347,7 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.all(1.0),
                         child: TextFormField(
                           onSaved: (value) {
-                            player5 = value!;
+                            playerNames[Position.extra] = value!;
                           },
                           decoration: InputDecoration(
                             labelText: AppLocalizations.of(
@@ -448,17 +368,10 @@ class _HomePageState extends State<HomePage> {
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState?.save();
-                              String gameID = uuid.v4();
-                              _createGame(
-                                gameID,
-                                player1,
-                                player2,
-                                player3,
-                                player4,
-                                player5,
-                              ).then((value) {
+                              _createGame(playerNames).then((gameId) {
+                                if (!context.mounted) return;
                                 Navigator.of(context).pop();
-                                _navigateToGame(gameID);
+                                _navigateToGame(gameId);
                               });
                             }
                           },
@@ -473,5 +386,16 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+  String _localizedHandPosition(Game game) {
+    final Position position = game.currentHandNumber.position;
+    final int roundHandNumber = game.currentHandNumber.roundHandNumber + 1;
+
+    if (game.finished) {
+      return AppLocalizations.of(context)!.finished;
+    } else {
+      return '${position.translatedString(context)} $roundHandNumber';
+    }
   }
 }

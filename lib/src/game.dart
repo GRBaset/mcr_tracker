@@ -81,6 +81,8 @@ class Game {
 
   void addHand(Hand hand) {
     _hands.add(hand);
+    // TODO: allow for customization, currently we finish on 16th hand
+    if (_hands.length >= 16) finished = true;
   }
 
   void removeHand(Hand hand) {

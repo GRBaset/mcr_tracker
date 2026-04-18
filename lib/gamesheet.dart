@@ -1,123 +1,32 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mcr_tracker/src/game.dart';
 import 'l10n/app_localizations.dart';
-import 'dart:convert';
-import 'constants.dart';
+import 'src/game_storage.dart';
 
 class GamePage extends StatefulWidget {
-  const GamePage({super.key, required this.gameID});
-  final String gameID;
+  const GamePage({super.key, required this.game});
+  final Game game;
 
   @override
   State<StatefulWidget> createState() => _GamePageState();
 }
 
 class _GamePageState extends State<GamePage> {
-  final _formKey = GlobalKey<FormState>();
-  List<String> players = [];
-  late List<int> playerScores;
-  late List<int> gameData;
-  int hand = 0;
-  final List<List<int>> rowsData = [];
-  String player1Wind = "";
-  String player2Wind = "";
-  String player3Wind = "";
-  String player4Wind = "";
-  String player5Wind = "";
-  String handEnd = "draw";
-  final List<String> handEndChoices = ["draw", "self", "offDiscard"];
-  int currentHandValue = 0;
-  int currentWinner = 0;
-  String currentWinnerName = "";
-  int currentLoser = 0;
-  String currentLoserName = "";
-  static const boldText = TextStyle(fontWeight: FontWeight.bold);
+  static const TextStyle boldText = TextStyle(fontWeight: FontWeight.bold);
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GameStorage storage = GameStorage();
 
   @override
   void initState() {
     super.initState();
-    _loadGames();
   }
 
   @override
   void didUpdateWidget(GamePage oldGamePage) {
     super.didUpdateWidget(oldGamePage);
-
-    _loadGames();
-  }
-
-  bool _is5thPlayer(int player, int hand) {
-    return players.length == 5 && fivePlayersHands[player][hand].isEmpty;
-  }
-
-  String _translateHandEnd(String handEnd) {
-    switch (handEnd) {
-      case "draw":
-        return AppLocalizations.of(context)!.draw;
-      case "self":
-        return AppLocalizations.of(context)!.self;
-      case "offDiscard":
-        return AppLocalizations.of(context)!.offDiscard;
-      default:
-        return "";
-    }
-  }
-
-  void _updatePlayersWinds(int hand) {
-    if (hand >= 16) {
-      player1Wind = "";
-      player2Wind = "";
-      player3Wind = "";
-      player4Wind = "";
-      player5Wind = "";
-    } else if (players.length == 5) {
-      player1Wind = windChars[fivePlayersHands[0][hand]]!;
-      player2Wind = windChars[fivePlayersHands[1][hand]]!;
-      player3Wind = windChars[fivePlayersHands[2][hand]]!;
-      player4Wind = windChars[fivePlayersHands[3][hand]]!;
-      player5Wind = windChars[fivePlayersHands[4][hand]]!;
-    } else {
-      player1Wind = windChars[fourPlayersHands[0][hand]]!;
-      player2Wind = windChars[fourPlayersHands[1][hand]]!;
-      player3Wind = windChars[fourPlayersHands[2][hand]]!;
-      player4Wind = windChars[fourPlayersHands[3][hand]]!;
-    }
-    print(
-      "$hand, '$player1Wind' '$player2Wind' '$player3Wind' '$player4Wind' '$player5Wind'",
-    );
-  }
-
-  void _loadGames() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    setState(() {
-      List<String> data = prefs.getStringList(widget.gameID) ?? [];
-      if (data.isNotEmpty) {
-        gameData = base64Decode(data[0]);
-        print("Loaded game : $gameData");
-        hand = gameData.length ~/ 3;
-        players = data.sublist(1);
-        _updatePlayersWinds(hand);
-        if (players.length == 5) {
-          playerScores = [0, 0, 0, 0, 0];
-        } else {
-          playerScores = [0, 0, 0, 0];
-        }
-        _loadDataRows();
-      }
-    });
-  }
-
-  void _loadDataRows() {
-    rowsData.clear();
-
-    for (int handToAdd = 0; handToAdd < hand; handToAdd++) {
-      int handValue = gameData[3 * handToAdd];
-      int winner = gameData[3 * handToAdd + 1];
-      int loser = gameData[3 * handToAdd + 2];
-      _addNewScore(handToAdd, handValue, winner, loser);
-    }
   }
 
   List<DataRow> _buildDataRows() {
@@ -127,40 +36,41 @@ class _GamePageState extends State<GamePage> {
     builtDataRows.add(_buildPlayerNames());
     builtDataRows.add(_buildPlayerTotal());
 
-    for (int rowHand = 0; rowHand < rowsData.length / 2; rowHand++) {
+    final HandScores handScores = widget.game.handScores();
+
+    widget.game.hands.forEachIndexed((index, hand) {
+      final HandNumber handNumber = HandNumber(index);
+      final PlayerScores playerScores = handScores.partial[index];
+      final PlayerScores playerTotalScores = handScores.total[index + 1];
+
       // TURN HAND -8 -8 -18 +x
       builtDataRows.add(
         DataRow(
-          onLongPress: _showDeleteHandDialog,
+          onLongPress: _deleteHandDialog,
           cells: [
             DataCell(
               Container(
                 alignment: Alignment.center,
-                child: Text(handNamesShort[rowHand]),
+                child: Text(_shortHandPosition(handNumber)),
               ),
             ),
             DataCell(
               Container(
                 alignment: Alignment.center,
-                child: Text(rowsData[2 * rowHand][0].toString()),
+                child: Text(hand.value?.toString() ?? ''),
               ),
             ),
-            for (
-              int playerIndex = 0;
-              playerIndex < players.length;
-              playerIndex++
-            )
+            for (final Player player in widget.game.playersSorted)
               DataCell(
                 Container(
                   alignment: Alignment.center,
-                  child: Text(
-                    rowsData[2 * rowHand][playerIndex + 1].toString(),
-                  ),
+                  child: Text(playerScores[player].toString()),
                 ),
               ),
           ],
         ),
       );
+
       // (total)    x   x  x  x  x
       builtDataRows.add(
         DataRow(
@@ -171,7 +81,7 @@ class _GamePageState extends State<GamePage> {
               context,
             ).colorScheme.secondary.withValues(alpha: 0.15);
           }),
-          onLongPress: _showDeleteHandDialog,
+          onLongPress: _deleteHandDialog,
           cells: [
             DataCell(
               Container(
@@ -179,30 +89,25 @@ class _GamePageState extends State<GamePage> {
                 child: Text(AppLocalizations.of(context)!.total),
               ),
             ),
-            const DataCell(Text("")),
-            for (
-              int playerIndex = 0;
-              playerIndex < players.length;
-              playerIndex++
-            )
+            const DataCell(Text('')),
+            for (final Player player in widget.game.playersSorted)
               DataCell(
                 Container(
                   alignment: Alignment.center,
-                  child: Text(
-                    rowsData[2 * rowHand + 1][playerIndex].toString(),
-                  ),
+                  child: Text(playerTotalScores[player].toString()),
                 ),
               ),
           ],
         ),
       );
-    }
+    });
 
     return builtDataRows;
   }
 
   DataRow _buildPlayerNames() {
     final double width = MediaQuery.of(context).size.width;
+    final List<Player> players = widget.game.playersSorted;
 
     return DataRow(
       color: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
@@ -219,12 +124,12 @@ class _GamePageState extends State<GamePage> {
             child: Text(AppLocalizations.of(context)!.value, style: boldText),
           ),
         ),
-        for (String player in players)
+        for (final Player player in players)
           DataCell(
             Container(
               alignment: Alignment.center,
               width: (width - 78) / (players.length + 2),
-              child: Text(player, style: boldText),
+              child: Text(player.name, style: boldText),
             ),
           ),
       ],
@@ -232,6 +137,9 @@ class _GamePageState extends State<GamePage> {
   }
 
   DataRow _buildPlayerTotal() {
+    final PlayerScores playerScores = widget.game.playerTotalScores();
+    final List<Player> players = widget.game.playersSorted;
+
     return DataRow(
       color: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
         return Theme.of(context).colorScheme.primary.withValues(alpha: 0.3);
@@ -244,62 +152,24 @@ class _GamePageState extends State<GamePage> {
           ),
         ),
         DataCell(Container(alignment: Alignment.center, child: Text(''))),
-        for (int playerIndex = 0; playerIndex < players.length; playerIndex++)
+        for (final Player player in players)
           DataCell(
             Container(
               alignment: Alignment.center,
-              child: Text(
-                playerScores[playerIndex].toString(),
-                style: boldText,
-              ),
+              child: Text(playerScores[player].toString(), style: boldText),
             ),
           ),
       ],
     );
   }
 
-  void _addNewScore(int handToAdd, int handValue, int winner, int loser) {
-    List<int> delta = [];
-    for (int playerNum = 1; playerNum < players.length + 1; playerNum++) {
-      if (handValue == 0 || _is5thPlayer(playerNum - 1, handToAdd)) {
-        delta.add(0);
-      } else if (loser == 0) {
-        // self draw
-        if (playerNum == winner) {
-          delta.add(3 * (8 + handValue));
-        } else {
-          delta.add(-8 - handValue);
-        }
-      } else {
-        // win off discard
-        if (playerNum == winner) {
-          delta.add(3 * 8 + handValue);
-        } else if (playerNum == loser) {
-          delta.add(-8 - handValue);
-        } else {
-          delta.add(-8);
-        }
-      }
-    }
-    for (int playerIndex = 0; playerIndex < players.length; playerIndex++) {
-      playerScores[playerIndex] += delta[playerIndex];
-    }
-
-    rowsData.add([handValue] + delta);
-    rowsData.add(List.from(playerScores));
-  }
-
-  Future<void> _saveHand() async {
-    final prefs = await SharedPreferences.getInstance();
-    gameData += [currentHandValue, currentWinner, currentLoser];
-    print("Game : $gameData");
-    prefs.setStringList(widget.gameID, [base64Encode(gameData)] + players);
-    hand++;
-    _updatePlayersWinds(hand);
+  Future<void> _saveHand(Hand hand) async {
+    widget.game.addHand(hand);
+    await storage.saveGame(game: widget.game);
     setState(() {});
   }
 
-  Future<void> _showDeleteHandDialog() async {
+  Future<void> _deleteHandDialog() async {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -334,26 +204,19 @@ class _GamePageState extends State<GamePage> {
   }
 
   Future<void> _deleteLastHand() async {
-    if (hand == 0) {
-      return;
-    }
-    final prefs = await SharedPreferences.getInstance();
-    gameData = gameData.sublist(0, gameData.length - 3);
-    print("Game : $gameData");
-    prefs.setStringList(widget.gameID, [base64Encode(gameData)] + players);
-    hand--;
-    _updatePlayersWinds(hand);
-    rowsData.removeRange(rowsData.length - 2, rowsData.length);
-    playerScores =
-        rowsData.isNotEmpty
-            ? List.from(rowsData.last)
-            : List.filled(players.length, 0);
+    if (widget.game.hands.isEmpty) return;
+    final Hand lastHand = widget.game.hands.last;
+    widget.game.removeHand(lastHand);
+    storage.saveGame(game: widget.game);
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
+    final List<Player> players = widget.game.playersSorted;
+    final HandNumber handNumber = widget.game.currentHandNumber;
+
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.scoreSheet)),
       body: SizedBox.expand(
@@ -361,74 +224,38 @@ class _GamePageState extends State<GamePage> {
           scrollDirection: Axis.horizontal,
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
-            child:
-                players.isNotEmpty
-                    ? SizedBox(
-                      width: width,
-                      child: DataTable(
-                        dataRowMaxHeight: double.infinity,
-                        columnSpacing: 5.0,
-                        columns: <DataColumn>[
-                          DataColumn(
-                            label: Expanded(
-                              child: Text(
-                                handNamesShort[hand],
-                                style: boldText,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                          DataColumn(label: const Text('')),
-                          DataColumn(
-                            label: Expanded(
-                              child: Text(
-                                player1Wind,
-                                style: boldText,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: Expanded(
-                              child: Text(
-                                player2Wind,
-                                style: boldText,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: Expanded(
-                              child: Text(
-                                player3Wind,
-                                style: boldText,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: Expanded(
-                              child: Text(
-                                player4Wind,
-                                style: boldText,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                          if (players.length == 5)
-                            DataColumn(
-                              label: Expanded(
-                                child: Text(
-                                  player5Wind,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                        ],
-                        rows: _buildDataRows(),
+            child: SizedBox(
+              width: width,
+              child: DataTable(
+                dataRowMaxHeight: double.infinity,
+                columnSpacing: 5.0,
+                columns: <DataColumn>[
+                  DataColumn(
+                    label: Expanded(
+                      child: Text(
+                        _shortHandPosition(handNumber),
+                        style: boldText,
+                        textAlign: TextAlign.center,
                       ),
-                    )
-                    : Text(AppLocalizations.of(context)!.loading),
+                    ),
+                  ),
+                  DataColumn(label: const Text('')),
+                  for (final Player player in players)
+                    DataColumn(
+                      label: Expanded(
+                        child: Text(
+                          player
+                              .currentPosition(handNumber: handNumber)
+                              .character,
+                          style: boldText,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+                rows: _buildDataRows(),
+              ),
+            ),
           ),
         ),
       ),
@@ -437,7 +264,7 @@ class _GamePageState extends State<GamePage> {
         child: Row(
           children: <Widget>[
             IconButton(
-              onPressed: _showDeleteHandDialog,
+              onPressed: _deleteHandDialog,
               icon: Icon(Icons.delete),
               tooltip: AppLocalizations.of(context)!.deleteLastHand,
             ),
@@ -446,29 +273,9 @@ class _GamePageState extends State<GamePage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
       floatingActionButton: Visibility(
-        visible: hand < 16,
+        visible: !widget.game.finished,
         child: FloatingActionButton.extended(
-          onPressed: () {
-            handEnd = "";
-            currentHandValue = 0;
-            currentWinner = 0;
-            currentWinnerName = "";
-            currentLoser = 0;
-            currentLoserName = "";
-            _showHandEndDialog().then(
-              (value) => setState(() {
-                if (value == 'ok') {
-                  _addNewScore(
-                    hand,
-                    currentHandValue,
-                    currentWinner,
-                    currentLoser,
-                  );
-                  _saveHand();
-                }
-              }),
-            );
-          },
+          onPressed: _handEndDialog,
           icon: const Icon(Icons.add),
           label: Text(AppLocalizations.of(context)!.addHand),
         ), // This trailing comma makes auto-formatting nicer for build methods.
@@ -476,7 +283,12 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  Future<dynamic> _showHandEndDialog() {
+  Future<dynamic> _handEndDialog() {
+    HandEndKind? handEndKind;
+    int? handValue;
+    Player? winner;
+    Player? giver;
+
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -507,38 +319,39 @@ class _GamePageState extends State<GamePage> {
                         children: <Widget>[
                           Padding(
                             padding: const EdgeInsets.all(1.0),
-                            child: DropdownButtonFormField<String>(
-                              onChanged: (String? value) {
+                            child: DropdownButtonFormField<HandEndKind>(
+                              onChanged: (HandEndKind? value) {
                                 setState(() {
-                                  handEnd = value!;
+                                  handEndKind = value;
                                 });
                               },
                               items:
-                                  handEndChoices.map<DropdownMenuItem<String>>((
-                                    String value,
-                                  ) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(_translateHandEnd(value)),
-                                    );
-                                  }).toList(),
-                              onSaved: (value) {
-                                // TODO SAVE VALUE
-                              },
+                                  HandEndKind.values
+                                      .map<DropdownMenuItem<HandEndKind>>((
+                                        HandEndKind value,
+                                      ) {
+                                        return DropdownMenuItem<HandEndKind>(
+                                          value: value,
+                                          child: Text(
+                                            value.translatedString(context),
+                                          ),
+                                        );
+                                      })
+                                      .toList(),
                               decoration: InputDecoration(
                                 labelText:
                                     AppLocalizations.of(context)!.handEnd,
                               ),
                               validator: (value) {
-                                if (value == null || value.isEmpty) {
+                                if (value == null) {
                                   return AppLocalizations.of(context)!.required;
                                 }
-                                // TODO CHECK
                                 return null;
                               },
                             ),
                           ),
-                          if (handEnd == "self" || handEnd == "offDiscard")
+                          if (handEndKind == HandEndKind.selfDraw ||
+                              handEndKind == HandEndKind.offDiscard)
                             Padding(
                               padding: const EdgeInsets.all(1.0),
                               child: TextFormField(
@@ -550,7 +363,7 @@ class _GamePageState extends State<GamePage> {
                                   FilteringTextInputFormatter.digitsOnly,
                                 ],
                                 onSaved: (value) {
-                                  currentHandValue = int.parse(value!);
+                                  handValue = int.parse(value!);
                                 },
                                 decoration: InputDecoration(
                                   labelText:
@@ -568,43 +381,37 @@ class _GamePageState extends State<GamePage> {
                                 },
                               ),
                             ),
-                          if (handEnd == "self" || handEnd == "offDiscard")
+                          if (handEndKind == HandEndKind.selfDraw ||
+                              handEndKind == HandEndKind.offDiscard)
                             Padding(
                               padding: const EdgeInsets.all(1.0),
-                              child: DropdownButtonFormField<String>(
-                                onChanged: (String? value) {
+                              child: DropdownButtonFormField<Player>(
+                                onChanged: (Player? value) {
                                   setState(() {
-                                    currentWinnerName = value!;
-                                    currentWinner =
-                                        players.indexOf(currentWinnerName) + 1;
+                                    winner = value;
                                   });
                                 },
                                 items:
-                                    players
+                                    widget.game.playersSorted
                                         .where(
                                           (player) =>
-                                              player != currentLoserName &&
-                                              !_is5thPlayer(
-                                                players.indexOf(player),
-                                                hand,
-                                              ),
+                                              widget.game.isPlaying(player),
                                         )
-                                        .map<DropdownMenuItem<String>>((
-                                          String value,
+                                        .map<DropdownMenuItem<Player>>((
+                                          Player value,
                                         ) {
-                                          return DropdownMenuItem<String>(
+                                          return DropdownMenuItem<Player>(
                                             value: value,
-                                            child: Text(value),
+                                            child: Text(value.name),
                                           );
                                         })
                                         .toList(),
-                                onSaved: (value) {},
                                 decoration: InputDecoration(
                                   labelText:
                                       AppLocalizations.of(context)!.winner,
                                 ),
                                 validator: (value) {
-                                  if (value == null || value.isEmpty) {
+                                  if (value == null) {
                                     return AppLocalizations.of(
                                       context,
                                     )!.required;
@@ -613,43 +420,38 @@ class _GamePageState extends State<GamePage> {
                                 },
                               ),
                             ),
-                          if (handEnd == "offDiscard" && currentWinner > 0)
+                          if (handEndKind == HandEndKind.offDiscard &&
+                              winner != null)
                             Padding(
                               padding: const EdgeInsets.all(1.0),
-                              child: DropdownButtonFormField<String>(
-                                onChanged: (String? value) {
+                              child: DropdownButtonFormField<Player>(
+                                onChanged: (Player? value) {
                                   setState(() {
-                                    currentLoserName = value!;
-                                    currentLoser =
-                                        players.indexOf(currentLoserName) + 1;
+                                    giver = value;
                                   });
                                 },
                                 items:
-                                    players
+                                    widget.game.playersSorted
                                         .where(
                                           (player) =>
-                                              player != currentWinnerName &&
-                                              !_is5thPlayer(
-                                                players.indexOf(player),
-                                                hand,
-                                              ),
+                                              widget.game.isPlaying(player) &&
+                                              player != winner,
                                         )
-                                        .map<DropdownMenuItem<String>>((
-                                          String value,
+                                        .map<DropdownMenuItem<Player>>((
+                                          Player value,
                                         ) {
-                                          return DropdownMenuItem<String>(
+                                          return DropdownMenuItem<Player>(
                                             value: value,
-                                            child: Text(value),
+                                            child: Text(value.name),
                                           );
                                         })
                                         .toList(),
-                                onSaved: (value) {},
                                 decoration: InputDecoration(
                                   labelText:
                                       AppLocalizations.of(context)!.giver,
                                 ),
                                 validator: (value) {
-                                  if (value == null || value.isEmpty) {
+                                  if (value == null) {
                                     return AppLocalizations.of(
                                       context,
                                     )!.required;
@@ -667,7 +469,23 @@ class _GamePageState extends State<GamePage> {
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState?.save();
-                                  Navigator.of(context).pop('ok');
+                                  Hand hand = switch (handEndKind!) {
+                                    HandEndKind.draw => Hand.draw(),
+                                    HandEndKind.selfDraw => Hand.selfDraw(
+                                      value: handValue!,
+                                      winner: winner!,
+                                    ),
+                                    HandEndKind.offDiscard => Hand.offDiscard(
+                                      value: handValue!,
+                                      winner: winner!,
+                                      giver: giver!,
+                                    ),
+                                  };
+
+                                  Navigator.of(context).pop();
+
+                                  _saveHand(hand);
+                                  setState(() {});
                                 }
                               },
                             ),
@@ -684,4 +502,7 @@ class _GamePageState extends State<GamePage> {
       },
     );
   }
+
+  String _shortHandPosition(HandNumber handNumber) =>
+      '${handNumber.position.character} - ${handNumber.roundHandNumber + 1}';
 }
