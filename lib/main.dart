@@ -8,10 +8,7 @@ import 'package:mcr_tracker/src/game.dart';
 import 'package:mcr_tracker/src/game_storage.dart';
 import 'l10n/app_localizations.dart';
 
-import 'package:uuid/uuid.dart';
 import 'gamesheet.dart';
-
-var uuid = const Uuid();
 
 void main() {
   runApp(const MyApp());
@@ -57,8 +54,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _formKey = GlobalKey<FormState>();
-  final Map<String, Widget> gameCards = HashMap();
-  final GameStorage storage = GameStorage();
+  final Map<String, Widget> _gameCards = HashMap();
+  final GameStorage _storage = GameStorage();
 
   @override
   void initState() {
@@ -75,11 +72,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _loadGames() async {
-    await storage.loadAllGames();
+    await _storage.loadAllGames();
 
-    for (final String gameId in storage.games.keys.sorted()) {
+    for (final String gameId in _storage.games.keys.sorted()) {
       Widget card = await _getNewCard(gameId);
-      gameCards[gameId] = card;
+      _gameCards[gameId] = card;
     }
 
     setState(() {});
@@ -104,7 +101,7 @@ class _HomePageState extends State<HomePage> {
       }
     });
 
-    final String gameId = await storage.newGame(players: players);
+    final String gameId = await _storage.newGame(players: players);
     developer.log('Created game $gameId');
 
     return gameId;
@@ -145,8 +142,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _deleteGame(String gameId) async {
-    gameCards.remove(gameId);
-    storage.deleteGame(gameId: gameId);
+    _gameCards.remove(gameId);
+    _storage.deleteGame(gameId: gameId);
     developer.log("Deleted game $gameId");
     setState(() {});
   }
@@ -154,12 +151,12 @@ class _HomePageState extends State<HomePage> {
   void _reloadGame(String gameId) async {
     developer.log("Reloading game $gameId");
     Widget newCard = await _getNewCard(gameId);
-    gameCards[gameId] = newCard;
+    _gameCards[gameId] = newCard;
     setState(() {});
   }
 
   Future<Widget> _getNewCard(String gameId) async {
-    final Game game = await storage.loadGame(gameId: gameId);
+    final Game game = await _storage.loadGame(gameId: gameId);
 
     if (!mounted) throw StateError('Context not mounted');
     return Card(
@@ -203,7 +200,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _navigateToGame(String gameId) async {
-    final Game game = await storage.loadGame(gameId: gameId);
+    final Game game = await _storage.loadGame(gameId: gameId);
 
     if (!mounted) throw StateError('Context not mounted');
     await Navigator.push(
@@ -221,7 +218,7 @@ class _HomePageState extends State<HomePage> {
         child: Container(
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
-            child: Column(children: gameCards.values.toList()),
+            child: Column(children: _gameCards.values.toList()),
           ),
         ),
       ),

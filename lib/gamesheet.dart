@@ -14,10 +14,22 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
-  static const TextStyle boldText = TextStyle(fontWeight: FontWeight.bold);
+  static const TextStyle _boldText = TextStyle(fontWeight: FontWeight.bold);
+  static const int _columnNumber = 7;
+  static const double _columnSpacing = 3.0;
+  static const double _horizontalMargin = 6.0;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final GameStorage storage = GameStorage();
+  final GlobalKey _tableKey = GlobalKey();
+  final List<GlobalKey> _columnKeys = List.generate(
+    _columnNumber,
+    (_) => GlobalKey(),
+  );
+  final List<TableColumnWidth?> _columnWidths = List.filled(
+    _columnNumber,
+    null,
+  );
+  final GameStorage _storage = GameStorage();
 
   @override
   void initState() {
@@ -106,7 +118,6 @@ class _GamePageState extends State<GamePage> {
   }
 
   DataRow _buildPlayerNames() {
-    final double width = MediaQuery.of(context).size.width;
     final List<Player> players = widget.game.playersSorted;
 
     return DataRow(
@@ -116,22 +127,16 @@ class _GamePageState extends State<GamePage> {
       cells: [
         DataCell(
           Center(
-            child: Text(AppLocalizations.of(context)!.hand, style: boldText),
+            child: Text(AppLocalizations.of(context)!.hand, style: _boldText),
           ),
         ),
         DataCell(
           Center(
-            child: Text(AppLocalizations.of(context)!.value, style: boldText),
+            child: Text(AppLocalizations.of(context)!.value, style: _boldText),
           ),
         ),
         for (final Player player in players)
-          DataCell(
-            Container(
-              alignment: Alignment.center,
-              width: (width - 78) / (players.length + 2),
-              child: Text(player.name, style: boldText),
-            ),
-          ),
+          DataCell(Center(child: Text(player.name, style: _boldText))),
       ],
     );
   }
@@ -148,15 +153,14 @@ class _GamePageState extends State<GamePage> {
         DataCell(
           Container(
             alignment: Alignment.center,
-            child: Text('Current', style: boldText),
+            child: Text(AppLocalizations.of(context)!.score, style: _boldText),
           ),
         ),
         DataCell(Container(alignment: Alignment.center, child: Text(''))),
         for (final Player player in players)
           DataCell(
-            Container(
-              alignment: Alignment.center,
-              child: Text(playerScores[player].toString(), style: boldText),
+            Center(
+              child: Text(playerScores[player].toString(), style: _boldText),
             ),
           ),
       ],
@@ -165,7 +169,7 @@ class _GamePageState extends State<GamePage> {
 
   Future<void> _saveHand(Hand hand) async {
     widget.game.addHand(hand);
-    await storage.saveGame(game: widget.game);
+    await _storage.saveGame(game: widget.game);
     setState(() {});
   }
 
@@ -207,58 +211,36 @@ class _GamePageState extends State<GamePage> {
     if (widget.game.hands.isEmpty) return;
     final Hand lastHand = widget.game.hands.last;
     widget.game.removeHand(lastHand);
-    storage.saveGame(game: widget.game);
+    _storage.saveGame(game: widget.game);
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getColumnWidths();
+    });
+
     final double width = MediaQuery.of(context).size.width;
-    final List<Player> players = widget.game.playersSorted;
-    final HandNumber handNumber = widget.game.currentHandNumber;
 
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.scoreSheet)),
-      body: SizedBox.expand(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: SizedBox(
-              width: width,
-              child: DataTable(
-                dataRowMaxHeight: double.infinity,
-                columnSpacing: 5.0,
-                columns: <DataColumn>[
-                  DataColumn(
-                    label: Expanded(
-                      child: Text(
-                        _shortHandPosition(handNumber),
-                        style: boldText,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                  DataColumn(label: const Text('')),
-                  for (final Player player in players)
-                    DataColumn(
-                      label: Expanded(
-                        child: Text(
-                          player
-                              .currentPosition(handNumber: handNumber)
-                              .character,
-                          style: boldText,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-                rows: _buildDataRows(),
-              ),
+      body: Column(
+        children: [
+          SizedBox(
+            width: width,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: _gameTable(),
             ),
           ),
-        ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Offstage(child: _gameTable(offstage: true)),
+          ),
+        ],
       ),
+
       bottomNavigationBar: BottomAppBar(
         elevation: 0,
         child: Row(
@@ -280,6 +262,53 @@ class _GamePageState extends State<GamePage> {
           label: Text(AppLocalizations.of(context)!.addHand),
         ), // This trailing comma makes auto-formatting nicer for build methods.
       ),
+    );
+  }
+
+  DataTable _gameTable({bool offstage = false}) {
+    final HandNumber handNumber = widget.game.currentHandNumber;
+    final List<Player> players = widget.game.playersSorted;
+    final List<TableColumnWidth?> columnWidths =
+        offstage ? List.filled(_columnNumber, null) : _columnWidths;
+    final List<GlobalKey?> columnKeys =
+        offstage ? _columnKeys : List.filled(_columnNumber, null);
+
+    return DataTable(
+      key: offstage ? null : _tableKey,
+      horizontalMargin: _horizontalMargin,
+      dataRowMaxHeight: double.infinity,
+      columnSpacing: _columnSpacing,
+      columns: <DataColumn>[
+        DataColumn(
+          columnWidth: columnWidths[0] ?? IntrinsicColumnWidth(),
+          label: Expanded(
+            key: columnKeys[0],
+            child: Text(
+              _shortHandPosition(handNumber),
+              style: _boldText,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        DataColumn(
+          columnWidth: columnWidths[1] ?? IntrinsicColumnWidth(),
+          label: Expanded(key: columnKeys[1], child: const Text('')),
+        ),
+        for (final (int index, Player player) in players.indexed)
+          DataColumn(
+            columnWidth: columnWidths[index + 2] ?? IntrinsicColumnWidth(),
+            //FlexColumnWidth(player.name.length.toDouble()),
+            label: Expanded(
+              key: columnKeys[index + 2],
+              child: Text(
+                player.currentPosition(handNumber: handNumber).character,
+                style: _boldText,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
+      rows: _buildDataRows(),
     );
   }
 
@@ -505,4 +534,45 @@ class _GamePageState extends State<GamePage> {
 
   String _shortHandPosition(HandNumber handNumber) =>
       '${handNumber.position.character} - ${handNumber.roundHandNumber + 1}';
+
+  void _getColumnWidths() {
+    final List<double> widths = List.filled(_columnNumber, 0.0);
+
+    for (final (int index, GlobalKey key) in _columnKeys.indexed) {
+      final double? width = key.currentContext?.size?.width;
+      if (width != null) {
+        widths[index] = width;
+      }
+    }
+
+    setState(() {
+      final double? tableWidth = _tableKey.currentContext?.size?.width;
+      if (tableWidth != null) {
+        if (tableWidth / _columnNumber - _columnSpacing > widths.max) {
+          _columnWidths.setAll(
+            0,
+            List.filled(_columnNumber, FractionColumnWidth(1 / 6)),
+          );
+        } else {
+          final int lastIndex = widths.lastIndexWhere((width) => width != 0);
+          for (int index = 0; index < lastIndex; index++) {
+            if (index <= 1) {
+              _columnWidths[index] = MaxColumnWidth(
+                IntrinsicColumnWidth(),
+                FlexColumnWidth(widths[index] + _columnSpacing),
+              );
+            } else {
+              _columnWidths[index] = FlexColumnWidth(
+                widths[index] + _columnSpacing,
+              );
+            }
+          }
+
+          _columnWidths[lastIndex] = FlexColumnWidth(
+            widths[lastIndex] + _columnSpacing + _horizontalMargin / 2,
+          );
+        }
+      }
+    });
+  }
 }

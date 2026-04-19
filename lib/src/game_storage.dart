@@ -1,7 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 
-import 'package:mcr_tracker/src/game.dart';
+import 'game.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const gamePrefix = 'game';
