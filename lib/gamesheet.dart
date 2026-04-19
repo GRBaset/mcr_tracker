@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +23,7 @@ class _GamePageState extends State<GamePage> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey _tableKey = GlobalKey();
+  final GlobalKey _scaffoldKey = GlobalKey();
   final List<GlobalKey> _columnKeys = List.generate(
     _columnNumber,
     (_) => GlobalKey(),
@@ -30,6 +33,8 @@ class _GamePageState extends State<GamePage> {
     null,
   );
   final GameStorage _storage = GameStorage();
+
+  bool _initialPaintDone = false;
 
   @override
   void initState() {
@@ -45,8 +50,8 @@ class _GamePageState extends State<GamePage> {
     List<DataRow> builtDataRows = [];
     //           E   S  W  N
     //           P1 P2 P3 P4 P5
-    builtDataRows.add(_buildPlayerNames());
-    builtDataRows.add(_buildPlayerTotal());
+    // builtDataRows.add(_buildPlayerNames());
+    // builtDataRows.add(_buildPlayerTotal());
 
     final HandScores handScores = widget.game.handScores();
 
@@ -60,25 +65,10 @@ class _GamePageState extends State<GamePage> {
         DataRow(
           onLongPress: _deleteHandDialog,
           cells: [
-            DataCell(
-              Container(
-                alignment: Alignment.center,
-                child: Text(_shortHandPosition(handNumber)),
-              ),
-            ),
-            DataCell(
-              Container(
-                alignment: Alignment.center,
-                child: Text(hand.value?.toString() ?? ''),
-              ),
-            ),
+            DataCell(Center(child: Text(_shortHandPosition(handNumber)))),
+            DataCell(Center(child: Text(hand.value?.toString() ?? ''))),
             for (final Player player in widget.game.playersSorted)
-              DataCell(
-                Container(
-                  alignment: Alignment.center,
-                  child: Text(playerScores[player].toString()),
-                ),
-              ),
+              DataCell(Center(child: Text(playerScores[player].toString()))),
           ],
         ),
       );
@@ -95,19 +85,11 @@ class _GamePageState extends State<GamePage> {
           }),
           onLongPress: _deleteHandDialog,
           cells: [
-            DataCell(
-              Container(
-                alignment: Alignment.center,
-                child: Text(AppLocalizations.of(context)!.total),
-              ),
-            ),
+            DataCell(Center(child: Text(AppLocalizations.of(context)!.total))),
             const DataCell(Text('')),
             for (final Player player in widget.game.playersSorted)
               DataCell(
-                Container(
-                  alignment: Alignment.center,
-                  child: Text(playerTotalScores[player].toString()),
-                ),
+                Center(child: Text(playerTotalScores[player].toString())),
               ),
           ],
         ),
@@ -217,26 +199,20 @@ class _GamePageState extends State<GamePage> {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _getColumnWidths();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateColumnWidths());
 
     final double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.scoreSheet)),
       body: Column(
         children: [
-          SizedBox(
-            width: width,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: _gameTable(),
-            ),
-          ),
+          _gameTableHeader(),
+          Expanded(child: SingleChildScrollView(child: _gameTable())),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: Offstage(child: _gameTable(offstage: true)),
+            child: Offstage(child: _gameTableHeader(offstage: true)),
           ),
         ],
       ),
@@ -265,7 +241,7 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  DataTable _gameTable({bool offstage = false}) {
+  DataTable _gameTableHeader({bool offstage = false}) {
     final HandNumber handNumber = widget.game.currentHandNumber;
     final List<Player> players = widget.game.playersSorted;
     final List<TableColumnWidth?> columnWidths =
@@ -284,7 +260,7 @@ class _GamePageState extends State<GamePage> {
           label: Expanded(
             key: columnKeys[0],
             child: Text(
-              _shortHandPosition(handNumber),
+              widget.game.finished ? '' : _shortHandPosition(handNumber),
               style: _boldText,
               textAlign: TextAlign.center,
             ),
@@ -306,6 +282,35 @@ class _GamePageState extends State<GamePage> {
                 textAlign: TextAlign.center,
               ),
             ),
+          ),
+      ],
+      rows: [_buildPlayerNames(), _buildPlayerTotal()],
+    );
+  }
+
+  DataTable _gameTable({bool offstage = false}) {
+    final List<Player> players = widget.game.playersSorted;
+    final List<TableColumnWidth?> columnWidths =
+        offstage ? List.filled(_columnNumber, null) : _columnWidths;
+
+    return DataTable(
+      horizontalMargin: _horizontalMargin,
+      dataRowMaxHeight: double.infinity,
+      columnSpacing: _columnSpacing,
+      headingRowHeight: 0,
+      columns: <DataColumn>[
+        DataColumn(
+          columnWidth: columnWidths[0] ?? IntrinsicColumnWidth(),
+          label: Container(),
+        ),
+        DataColumn(
+          columnWidth: columnWidths[1] ?? IntrinsicColumnWidth(),
+          label: Container(),
+        ),
+        for (final (int index, Player player) in players.indexed)
+          DataColumn(
+            columnWidth: columnWidths[index + 2] ?? IntrinsicColumnWidth(),
+            label: Container(),
           ),
       ],
       rows: _buildDataRows(),
@@ -535,13 +540,17 @@ class _GamePageState extends State<GamePage> {
   String _shortHandPosition(HandNumber handNumber) =>
       '${handNumber.position.character} - ${handNumber.roundHandNumber + 1}';
 
-  void _getColumnWidths() {
+  void _updateColumnWidths() {
+    if (!mounted) return;
+
     final List<double> widths = List.filled(_columnNumber, 0.0);
 
     for (final (int index, GlobalKey key) in _columnKeys.indexed) {
-      final double? width = key.currentContext?.size?.width;
-      if (width != null) {
-        widths[index] = width;
+      final RenderBox? renderBox =
+          key.currentContext?.findRenderObject() as RenderBox?;
+
+      if (renderBox != null) {
+        widths[index] = renderBox.size.width;
       }
     }
 
