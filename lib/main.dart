@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 
 import 'package:collection/collection.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mcr_tracker/src/game.dart';
 import 'package:mcr_tracker/src/game_storage.dart';
@@ -201,12 +202,17 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _navigateToGame(String gameId) async {
     final Game game = await _storage.loadGame(gameId: gameId);
+    final Route route =
+        kDebugMode
+            ? PageRouteBuilder(
+              pageBuilder:
+                  (context, animation, secondaryAnimation) =>
+                      GamePage(game: game),
+            )
+            : MaterialPageRoute(builder: (context) => GamePage(game: game));
 
     if (!mounted) throw StateError('Context not mounted');
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => GamePage(game: game)),
-    );
+    await Navigator.push(context, route);
     _reloadGame(gameId);
   }
 

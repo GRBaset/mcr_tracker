@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,8 +32,6 @@ class _GamePageState extends State<GamePage> {
     null,
   );
   final GameStorage _storage = GameStorage();
-
-  bool _initialPaintDone = false;
 
   @override
   void initState() {
@@ -201,8 +198,6 @@ class _GamePageState extends State<GamePage> {
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => _updateColumnWidths());
 
-    final double width = MediaQuery.of(context).size.width;
-
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.scoreSheet)),
@@ -212,7 +207,7 @@ class _GamePageState extends State<GamePage> {
           Expanded(child: SingleChildScrollView(child: _gameTable())),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: Offstage(child: _gameTableHeader(offstage: true)),
+            child: _gameTableHeader(offstage: true),
           ),
         ],
       ),
@@ -241,7 +236,7 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  DataTable _gameTableHeader({bool offstage = false}) {
+  Offstage _gameTableHeader({bool offstage = false}) {
     final HandNumber handNumber = widget.game.currentHandNumber;
     final List<Player> players = widget.game.playersSorted;
     final List<TableColumnWidth?> columnWidths =
@@ -249,42 +244,45 @@ class _GamePageState extends State<GamePage> {
     final List<GlobalKey?> columnKeys =
         offstage ? _columnKeys : List.filled(_columnNumber, null);
 
-    return DataTable(
-      key: offstage ? null : _tableKey,
-      horizontalMargin: _horizontalMargin,
-      dataRowMaxHeight: double.infinity,
-      columnSpacing: _columnSpacing,
-      columns: <DataColumn>[
-        DataColumn(
-          columnWidth: columnWidths[0] ?? IntrinsicColumnWidth(),
-          label: Expanded(
-            key: columnKeys[0],
-            child: Text(
-              widget.game.finished ? '' : _shortHandPosition(handNumber),
-              style: _boldText,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-        DataColumn(
-          columnWidth: columnWidths[1] ?? IntrinsicColumnWidth(),
-          label: Expanded(key: columnKeys[1], child: const Text('')),
-        ),
-        for (final (int index, Player player) in players.indexed)
+    return Offstage(
+      offstage: offstage,
+      child: DataTable(
+        key: offstage ? null : _tableKey,
+        horizontalMargin: _horizontalMargin,
+        dataRowMaxHeight: double.infinity,
+        columnSpacing: _columnSpacing,
+        columns: <DataColumn>[
           DataColumn(
-            columnWidth: columnWidths[index + 2] ?? IntrinsicColumnWidth(),
-            //FlexColumnWidth(player.name.length.toDouble()),
+            columnWidth: columnWidths[0] ?? IntrinsicColumnWidth(),
             label: Expanded(
-              key: columnKeys[index + 2],
+              key: columnKeys[0],
               child: Text(
-                player.currentPosition(handNumber: handNumber).character,
+                widget.game.finished ? '' : _shortHandPosition(handNumber),
                 style: _boldText,
                 textAlign: TextAlign.center,
               ),
             ),
           ),
-      ],
-      rows: [_buildPlayerNames(), _buildPlayerTotal()],
+          DataColumn(
+            columnWidth: columnWidths[1] ?? IntrinsicColumnWidth(),
+            label: Expanded(key: columnKeys[1], child: const Text('')),
+          ),
+          for (final (int index, Player player) in players.indexed)
+            DataColumn(
+              columnWidth: columnWidths[index + 2] ?? IntrinsicColumnWidth(),
+              //FlexColumnWidth(player.name.length.toDouble()),
+              label: Expanded(
+                key: columnKeys[index + 2],
+                child: Text(
+                  player.currentPosition(handNumber: handNumber).character,
+                  style: _boldText,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
+        rows: [_buildPlayerNames(), _buildPlayerTotal()],
+      ),
     );
   }
 
@@ -307,7 +305,7 @@ class _GamePageState extends State<GamePage> {
           columnWidth: columnWidths[1] ?? IntrinsicColumnWidth(),
           label: Container(),
         ),
-        for (final (int index, Player player) in players.indexed)
+        for (int index = 0; index < players.length; index++)
           DataColumn(
             columnWidth: columnWidths[index + 2] ?? IntrinsicColumnWidth(),
             label: Container(),
