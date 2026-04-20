@@ -1,0 +1,46 @@
+{
+    "players": [
+        {
+            "name": "1",
+            "initialPosition": 0
+        },
+        {
+            "name": "2",
+            "initialPosition": 1
+        },
+        {
+            "name": "3",
+            "initialPosition": 2
+        },
+        {
+            "name": "4",
+            "initialPosition": 3
+        }
+    ],
+    "startTime": "2026-04-20T13:33:09.754169Z",
+    "endTime": null,
+    "finished": false,
+    "hands": [
+        {
+            "endTime": "2026-04-20T13:33:09.754304Z",
+            "endKind": "draw",
+            "value": null,
+            "winner": null,
+            "giver": null
+        },
+        {
+            "endTime": "2026-04-20T13:33:09.754460Z",
+            "endKind": "selfDraw",
+            "value": 8,
+            "winner": 0,
+            "giver": null
+        },
+        {
+            "endTime": "2026-04-20T13:33:09.754498Z",
+            "endKind": "offDiscard",
+            "value": 16,
+            "winner": 2,
+            "giver": 0
+        }
+    ]
+}

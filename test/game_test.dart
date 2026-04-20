@@ -4,7 +4,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mcr_tracker/src/game.dart';
 
-const String testGame = './test/test_data/test_game.json';
+const String testGameV1 = './test/test_data/test_game_v1.json';
+const String testGameV2 = './test/test_data/test_game_v2.json';
 
 void main() {
   group('Hand tests', () {
@@ -102,7 +103,7 @@ void main() {
         Hand.offDiscard(value: 16, winner: players[2], giver: players[0]),
       );
 
-      final String json = await File(testGame).readAsString();
+      final String json = await File(testGameV1).readAsString();
 
       //expect(game.toJson(), jsonDecode(json));
       print(jsonEncode(game.toJson()));
@@ -115,17 +116,29 @@ void main() {
         Player(name: '3', initialPosition: Position.west),
         Player(name: '4', initialPosition: Position.north),
       ];
-      final game = Game(players: players.toSet());
-      game.addHand(Hand.draw());
-      game.addHand(Hand.selfDraw(value: 8, winner: players[0]));
+      final game = Game(
+        players: players.toSet(),
+        startTime: DateTime.fromMillisecondsSinceEpoch(0),
+      );
+      game.addHand(Hand.draw(endTime: game.startTime));
       game.addHand(
-        Hand.offDiscard(value: 16, winner: players[2], giver: players[0]),
+        Hand.selfDraw(endTime: game.startTime, value: 8, winner: players[0]),
+      );
+      game.addHand(
+        Hand.offDiscard(
+          endTime: game.startTime,
+          value: 16,
+          winner: players[2],
+          giver: players[0],
+        ),
       );
 
-      final String json = await File(testGame).readAsString();
+      final String json = await File(testGameV1).readAsString();
+      final String json2 = await File(testGameV2).readAsString();
 
       print(game.toJson());
       print(Game.fromJson(jsonDecode(json)).toJson());
+      print(Game.fromJson(jsonDecode(json2)).toJson());
 
       expect(Game.fromJson(jsonDecode(json)), game);
     });

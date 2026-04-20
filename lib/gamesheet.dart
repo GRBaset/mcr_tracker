@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mcr_tracker/src/game.dart';
 import 'l10n/app_localizations.dart';
-import 'src/game_storage.dart';
 
 class GamePage extends StatefulWidget {
   const GamePage({super.key, required this.game});
@@ -31,7 +30,6 @@ class _GamePageState extends State<GamePage> {
     _columnNumber,
     null,
   );
-  final GameStorage _storage = GameStorage();
 
   @override
   void initState() {
@@ -47,8 +45,6 @@ class _GamePageState extends State<GamePage> {
     List<DataRow> builtDataRows = [];
     //           E   S  W  N
     //           P1 P2 P3 P4 P5
-    // builtDataRows.add(_buildPlayerNames());
-    // builtDataRows.add(_buildPlayerTotal());
 
     final HandScores handScores = widget.game.handScores();
 
@@ -147,8 +143,7 @@ class _GamePageState extends State<GamePage> {
   }
 
   Future<void> _saveHand(Hand hand) async {
-    widget.game.addHand(hand);
-    await _storage.saveGame(game: widget.game);
+    await widget.game.addHand(hand);
     setState(() {});
   }
 
@@ -189,8 +184,7 @@ class _GamePageState extends State<GamePage> {
   Future<void> _deleteLastHand() async {
     if (widget.game.hands.isEmpty) return;
     final Hand lastHand = widget.game.hands.last;
-    widget.game.removeHand(lastHand);
-    _storage.saveGame(game: widget.game);
+    await widget.game.removeHand(lastHand);
     setState(() {});
   }
 
@@ -217,19 +211,19 @@ class _GamePageState extends State<GamePage> {
         child: Row(
           children: <Widget>[
             IconButton(
-              onPressed: _deleteHandDialog,
+              onPressed: widget.game.finished ? null : _deleteHandDialog,
               icon: const Icon(Icons.delete),
               tooltip: AppLocalizations.of(context)!.deleteLastHand,
             ),
             if (widget.game.finished)
               IconButton(
-                onPressed: () => widget.game.finished = false,
+                onPressed: () => widget.game.resume(),
                 icon: const Icon(Icons.play_arrow),
                 tooltip: AppLocalizations.of(context)!.resume,
               ),
             if (!widget.game.finished)
               IconButton(
-                onPressed: () => widget.game.finished = true,
+                onPressed: () => widget.game.finish(),
                 icon: const Icon(Icons.check),
                 tooltip: AppLocalizations.of(context)!.finish,
               ),

@@ -396,7 +396,7 @@ class _HomePageState extends State<HomePage> {
     final int roundHandNumber = game.currentHandNumber.roundHandNumber + 1;
 
     if (game.finished) {
-      return AppLocalizations.of(context)!.finished;
+      return '${AppLocalizations.of(context)!.finished} (${position.translatedString(context)} $roundHandNumber)';
     } else {
       return '${position.translatedString(context)} $roundHandNumber';
     }

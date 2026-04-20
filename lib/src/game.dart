@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mcr_tracker/l10n/app_localizations.dart';
+import 'package:mcr_tracker/src/game_storage.dart';
 
 // The offset after the seat rotation each round (set of 4 hands)
 const positionOffsets = {
@@ -65,28 +66,47 @@ class Game {
   Game._internal({
     required this.players,
     required this.startTime,
-    this.finished = false,
+    this.endTime,
   });
 
   final DateTime startTime;
+  DateTime? endTime;
   final Set<Player> players;
   final List<Hand> _hands = [];
-  bool finished;
+  final GameStorage _storage = GameStorage();
 
+  bool get finished => endTime != null;
   UnmodifiableListView<Player> get playersSorted =>
       UnmodifiableListView(players.sorted((a, b) => a.compareTo(b)));
   UnmodifiableListView<Hand> get hands => UnmodifiableListView(_hands);
-  HandNumber get currentHandNumber => HandNumber(_hands.length);
+  HandNumber get currentHandNumber =>
+      finished ? HandNumber(_hands.length - 1) : HandNumber(_hands.length);
   bool get withExtraPlayer => players.length > 4;
 
-  void addHand(Hand hand) {
-    _hands.add(hand);
-    // TODO: allow for customization, currently we finish on 16th hand
-    if (_hands.length >= 16) finished = true;
+  Future<void> _save() async => await _storage.saveGame(game: this);
+
+  Future<void> finish({DateTime? newEndTime, bool save = true}) async {
+    endTime = newEndTime ?? DateTime.timestamp();
+    if (save) await _save();
   }
 
-  void removeHand(Hand hand) {
+  Future<void> resume() async {
+    endTime = null;
+    await _save();
+  }
+
+  Future<void> addHand(Hand hand) async {
+    if (finished) throw GameFinishedException();
+    _hands.add(hand);
+    // TODO: allow for customization, currently we finish on 16th hand
+    if (_hands.length >= 16) finish(save: false);
+    await _save();
+  }
+
+  Future<void> removeHand(Hand hand) async {
+    if (finished) throw GameFinishedException();
     _hands.remove(hand);
+    await _save();
   }
 
   Position playerPosition(Player player) => player.currentPosition(
@@ -152,7 +172,11 @@ class Game {
     return playerTotalScoresList.last;
   }
 
-  factory Game({required Set<Player> players, bool finished = false}) {
+  factory Game({
+    required Set<Player> players,
+    DateTime? startTime,
+    DateTime? endTime,
+  }) {
     final int playerNumber = players.length;
 
     if (playerNumber != 4 && playerNumber != 5) {
@@ -168,74 +192,89 @@ class Game {
 
     if (playerPositions.difference({Position.extra}).length != 4) {
       throw ArgumentError(
-        'The players must have wind positions before the extra position.',
+        'There must be at least 4 players with wind (not extra) positions.',
       );
     }
 
     return Game._internal(
       players: players,
-      startTime: DateTime.timestamp(),
-      finished: finished,
+      startTime: startTime ?? DateTime.timestamp(),
+      endTime: endTime,
     );
   }
 
   factory Game.fromJson(Map<String, Object?> json) {
+    if (!json.containsKey('endTime')) json['endTime'] = null;
+
     if (json case {
       'players': final List<Object?> jsonPlayers,
-      'startTime': final String startTime,
-      'finished': final bool finished,
+      'startTime': final String startTimeString,
+      'endTime': final String? endTimeString,
       'hands': final List<Object?> jsonHands,
     }) {
       final Set<Player> players =
           jsonPlayers
               .map((json) => Player.fromJson(json as Map<String, Object?>))
               .toSet();
-      final Game game = Game._internal(
+      final Game game = Game(
         players: players,
-        startTime: DateTime.parse(startTime),
-        finished: finished,
+        startTime: DateTime.parse(startTimeString),
       );
+      final DateTime? endTime = DateTime.tryParse(endTimeString ?? '');
 
       for (final hand in jsonHands) {
-        switch (hand) {
-          case {'endKind': 'draw'}:
-            game.addHand(Hand.draw());
-          case {
-            'endKind': 'selfDraw',
-            'value': final int value,
-            'winner': final int winnerInitialPosition,
-          }:
-            game.addHand(
-              Hand.selfDraw(
-                value: value,
-                winner: players.firstWhere(
-                  (player) =>
-                      player.initialPosition.index == winnerInitialPosition,
+        if (hand is Map<String, Object?>) {
+          if (!hand.containsKey('endTime')) hand['endTime'] = null;
+
+          switch (hand) {
+            case {'endTime': final String? endTimeString, 'endKind': 'draw'}:
+              game.addHand(
+                Hand.draw(
+                  endTime: DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
                 ),
-              ),
-            );
-          case {
-            'endKind': 'offDiscard',
-            'value': final int value,
-            'winner': final int winnerInitialPosition,
-            'giver': final int giverInitialPosition,
-          }:
-            game.addHand(
-              Hand.offDiscard(
-                value: value,
-                winner: players.firstWhere(
-                  (player) =>
-                      player.initialPosition.index == winnerInitialPosition,
+              );
+            case {
+              'endTime': final String? endTimeString,
+              'endKind': 'selfDraw',
+              'value': final int value,
+              'winner': final int winnerInitialPosition,
+            }:
+              game.addHand(
+                Hand.selfDraw(
+                  endTime: DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
+                  value: value,
+                  winner: players.firstWhere(
+                    (player) =>
+                        player.initialPosition.index == winnerInitialPosition,
+                  ),
                 ),
-                giver: players.firstWhere(
-                  (player) =>
-                      player.initialPosition.index == giverInitialPosition,
+              );
+            case {
+              'endTime': final String? endTimeString,
+              'endKind': 'offDiscard',
+              'value': final int value,
+              'winner': final int winnerInitialPosition,
+              'giver': final int giverInitialPosition,
+            }:
+              game.addHand(
+                Hand.offDiscard(
+                  endTime: DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
+                  value: value,
+                  winner: players.firstWhere(
+                    (player) =>
+                        player.initialPosition.index == winnerInitialPosition,
+                  ),
+                  giver: players.firstWhere(
+                    (player) =>
+                        player.initialPosition.index == giverInitialPosition,
+                  ),
                 ),
-              ),
-            );
+              );
+          }
         }
       }
 
+      if (endTime != null) game.finish(newEndTime: endTime);
       return game;
     }
 
@@ -245,11 +284,13 @@ class Game {
   Map<String, Object?> toJson() => <String, Object?>{
     'players': players.map((player) => player.toJson()).toList(),
     'startTime': startTime.toIso8601String(),
+    'endTime': endTime?.toIso8601String(),
     'finished': finished,
     'hands':
         hands
             .map(
               (hand) => {
+                'endTime': hand.endTime.toIso8601String(),
                 'endKind': hand.endKind,
                 'value': hand.value,
                 'winner': hand.winner?.initialPosition,
@@ -258,6 +299,16 @@ class Game {
             )
             .toList(),
   };
+}
+
+class GameFinishedException implements Exception {
+  GameFinishedException();
+
+  @override
+  String toString() {
+    // TODO: implement toString
+    return 'Game finished, cannot modify.';
+  }
 }
 
 extension on PlayerScores {
@@ -350,24 +401,48 @@ class Player implements Comparable {
 }
 
 class Hand {
+  Hand._internal({
+    required this.endTime,
+    required this.endKind,
+    this.value,
+    this.winner,
+    this.giver,
+  });
+
+  final DateTime endTime;
   final HandEndKind endKind;
   final int? value;
   final Player? winner;
   final Player? giver;
 
-  Hand.draw()
-    : endKind = HandEndKind.draw,
-      value = null,
-      winner = null,
-      giver = null;
-  Hand.selfDraw({required int this.value, required Player this.winner})
-    : endKind = HandEndKind.selfDraw,
-      giver = null;
-  Hand.offDiscard({
-    required int this.value,
-    required Player this.winner,
-    required Player this.giver,
-  }) : endKind = HandEndKind.offDiscard;
+  factory Hand.draw({DateTime? endTime}) => Hand._internal(
+    endTime: endTime ?? DateTime.timestamp(),
+    endKind: HandEndKind.draw,
+  );
+
+  factory Hand.selfDraw({
+    DateTime? endTime,
+    required int value,
+    required Player winner,
+  }) => Hand._internal(
+    endTime: endTime ?? DateTime.timestamp(),
+    endKind: HandEndKind.selfDraw,
+    value: value,
+    winner: winner,
+  );
+
+  factory Hand.offDiscard({
+    DateTime? endTime,
+    required int value,
+    required Player winner,
+    required Player giver,
+  }) => Hand._internal(
+    endTime: endTime ?? DateTime.timestamp(),
+    endKind: HandEndKind.offDiscard,
+    value: value,
+    winner: winner,
+    giver: giver,
+  );
 }
 
 class HandNumber {
