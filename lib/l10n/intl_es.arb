@@ -33,6 +33,8 @@
   "required": "Requerido",
   "startGame": "Comenzar la partida",
   "newGame": "Nueva partida",
+  "finish": "Finalizar",
+  "resume": "Resumir",
   "finished": "Finalizada",
   "loading": "Cargando...",
   "total": "Total",

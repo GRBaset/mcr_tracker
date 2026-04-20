@@ -33,6 +33,8 @@
   "required": "Required",
   "startGame": "Start game",
   "newGame": "New game",
+  "finish": "Finish",
+  "resume": "Resume",
   "finished": "Finished",
   "loading": "Loading...",
   "total": "Total",

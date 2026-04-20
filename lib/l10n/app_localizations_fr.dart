@@ -65,6 +65,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get newGame => 'Nouvelle partie';
 
   @override
+  String get finish => 'Finir';
+
+  @override
+  String get resume => 'Reprendre';
+
+  @override
   String get finished => 'Finie';
 
   @override

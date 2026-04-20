@@ -218,19 +218,39 @@ class _GamePageState extends State<GamePage> {
           children: <Widget>[
             IconButton(
               onPressed: _deleteHandDialog,
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               tooltip: AppLocalizations.of(context)!.deleteLastHand,
             ),
+            if (widget.game.finished)
+              IconButton(
+                onPressed: () => widget.game.finished = false,
+                icon: const Icon(Icons.play_arrow),
+                tooltip: AppLocalizations.of(context)!.resume,
+              ),
+            if (!widget.game.finished)
+              IconButton(
+                onPressed: () => widget.game.finished = true,
+                icon: const Icon(Icons.check),
+                tooltip: AppLocalizations.of(context)!.finish,
+              ),
           ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
       floatingActionButton: Visibility(
-        visible: !widget.game.finished,
         child: FloatingActionButton.extended(
-          onPressed: _handEndDialog,
-          icon: const Icon(Icons.add),
-          label: Text(AppLocalizations.of(context)!.addHand),
+          onPressed: widget.game.finished ? null : _handEndDialog,
+          backgroundColor: widget.game.finished ? Colors.grey.shade200 : null,
+          foregroundColor: widget.game.finished ? Colors.grey.shade600 : null,
+          icon:
+              widget.game.finished
+                  ? const Icon(Icons.check)
+                  : const Icon(Icons.add),
+          label: Text(
+            widget.game.finished
+                ? AppLocalizations.of(context)!.finished
+                : AppLocalizations.of(context)!.addHand,
+          ),
         ), // This trailing comma makes auto-formatting nicer for build methods.
       ),
     );

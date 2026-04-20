@@ -202,6 +202,18 @@ abstract class AppLocalizations {
   /// **'New game'**
   String get newGame;
 
+  /// No description provided for @finish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get finish;
+
+  /// No description provided for @resume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resume;
+
   /// No description provided for @finished.
   ///
   /// In en, this message translates to:

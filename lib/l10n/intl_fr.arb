@@ -34,6 +34,8 @@
   "startGame": "Commencer la partie",
   "newGame": "Nouvelle partie",
   "finished": "Finie",
+  "finish": "Finir",
+  "resume": "Reprendre",
   "loading": "Chargement en cours...",
   "total": "Total",
   "scoreSheet": "Feuille de scores",
