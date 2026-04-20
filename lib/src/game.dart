@@ -59,8 +59,20 @@ enum HandEndKind {
   String toJson() => name;
 }
 
-typedef PlayerScores = Map<Player, int>;
 typedef HandScores = ({List<PlayerScores> partial, List<PlayerScores> total});
+
+typedef PlayerScores = Map<Player, int>;
+
+extension on PlayerScores {
+  PlayerScores operator +(PlayerScores? other) {
+    if (other == null) return this;
+
+    return map((player, score) {
+      score += other[player] ?? 0;
+      return MapEntry(player, score);
+    });
+  }
+}
 
 class Game {
   Game._internal({
@@ -230,7 +242,8 @@ class Game {
             case {'endTime': final String? endTimeString, 'endKind': 'draw'}:
               game.addHand(
                 Hand.draw(
-                  endTime: DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
+                  endTime:
+                      DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
                 ),
               );
             case {
@@ -241,7 +254,8 @@ class Game {
             }:
               game.addHand(
                 Hand.selfDraw(
-                  endTime: DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
+                  endTime:
+                      DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
                   value: value,
                   winner: players.firstWhere(
                     (player) =>
@@ -258,7 +272,8 @@ class Game {
             }:
               game.addHand(
                 Hand.offDiscard(
-                  endTime: DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
+                  endTime:
+                      DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
                   value: value,
                   winner: players.firstWhere(
                     (player) =>
@@ -308,17 +323,6 @@ class GameFinishedException implements Exception {
   String toString() {
     // TODO: implement toString
     return 'Game finished, cannot modify.';
-  }
-}
-
-extension on PlayerScores {
-  PlayerScores operator +(PlayerScores? other) {
-    if (other == null) return this;
-
-    return map((player, score) {
-      score += other[player] ?? 0;
-      return MapEntry(player, score);
-    });
   }
 }
 

@@ -1,8 +1,11 @@
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mcr_tracker/src/game.dart';
@@ -10,6 +13,8 @@ import 'package:mcr_tracker/src/game_storage.dart';
 import 'l10n/app_localizations.dart';
 
 import 'gamesheet.dart';
+
+enum HomeMenuItem { export, import }
 
 void main() {
   runApp(const MyApp());
@@ -126,7 +131,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.of(context).pop();
               },
               child: Text(
-                AppLocalizations.of(context)!.deleteButton,
+                AppLocalizations.of(context)!.delete.toUpperCase(),
                 style: TextStyle(color: Colors.red),
               ),
             ),
@@ -134,7 +139,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text(AppLocalizations.of(context)!.cancelButton),
+              child: Text(AppLocalizations.of(context)!.cancel.toUpperCase()),
             ),
           ],
         );
@@ -177,7 +182,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: 8),
               TextButton(
                 child: Text(
-                  AppLocalizations.of(context)!.deleteButton,
+                  AppLocalizations.of(context)!.delete.toUpperCase(),
                   style: TextStyle(color: Colors.red),
                 ),
                 onPressed: () {
@@ -186,10 +191,19 @@ class _HomePageState extends State<HomePage> {
               ),
               const Spacer(),
               TextButton(
+                child: Text(AppLocalizations.of(context)!.export.toUpperCase()),
+                onPressed: () => _exportGames(gameIds: [gameId]),
+              ),
+              const SizedBox(width: 8),
+              TextButton(
                 child:
                     game.finished
-                        ? Text(AppLocalizations.of(context)!.viewButton)
-                        : Text(AppLocalizations.of(context)!.continueButton),
+                        ? Text(AppLocalizations.of(context)!.view.toUpperCase())
+                        : Text(
+                          AppLocalizations.of(
+                            context,
+                          )!.continueLabel.toUpperCase(),
+                        ),
                 onPressed: () => _navigateToGame(gameId),
               ),
               const SizedBox(width: 8),
@@ -219,7 +233,41 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: [
+          PopupMenuButton<HomeMenuItem>(
+            onSelected:
+                (value) => switch (value) {
+                  HomeMenuItem.export => _exportGames(),
+                  HomeMenuItem.import => _importGames(),
+                },
+            itemBuilder:
+                (context) => [
+                  PopupMenuItem<HomeMenuItem>(
+                    value: HomeMenuItem.export,
+                    child: Row(
+                      spacing: 8.0,
+                      children: [
+                        Icon(Icons.upload),
+                        Text(AppLocalizations.of(context)!.exportAll),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<HomeMenuItem>(
+                    value: HomeMenuItem.import,
+                    child: Row(
+                      spacing: 8.0,
+                      children: [
+                        Icon(Icons.download),
+                        Text(AppLocalizations.of(context)!.import),
+                      ],
+                    ),
+                  ),
+                ],
+          ),
+        ],
+      ),
       body: Center(
         child: Container(
           alignment: Alignment.topCenter,
@@ -399,6 +447,53 @@ class _HomePageState extends State<HomePage> {
       return '${AppLocalizations.of(context)!.finished} (${position.translatedString(context)} $roundHandNumber)';
     } else {
       return '${position.translatedString(context)} $roundHandNumber';
+    }
+  }
+
+  Future<void> _exportGames({List<String>? gameIds}) async {
+    String filename;
+    String? dialogTitle = mounted ? AppLocalizations.of(context)!.export : null;
+
+    if (gameIds != null) {
+      if (gameIds.length == 1) {
+        final Game game = await _storage.loadGame(gameId: gameIds.first);
+        filename =
+            'mcr_game_${game.startTime.toLocal().toIso8601String()}.json';
+      } else {
+        filename = 'mcr_games_${DateTime.now().toIso8601String()}.json';
+      }
+    } else {
+      filename = 'all_mcr_games_${DateTime.now().toIso8601String()}.json';
+      dialogTitle = mounted ? AppLocalizations.of(context)!.exportAll : null;
+    }
+
+    final String encodedJson = jsonEncode(
+      _storage.exportJson(gameIds: gameIds),
+    );
+
+    await FilePicker.saveFile(
+      dialogTitle: dialogTitle,
+      fileName: filename,
+      bytes: utf8.encode(encodedJson),
+    );
+    return;
+  }
+
+  Future<void> _importGames() async {
+    FilePickerResult? result = await FilePicker.pickFiles(
+      dialogTitle: AppLocalizations.of(context)!.import,
+    );
+
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      final String encodedJson = await file.readAsString();
+      final int gameNumber = await _storage.importJson(jsonDecode(encodedJson));
+      _loadGames();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Imported $gameNumber games.')));
     }
   }
 }

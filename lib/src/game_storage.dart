@@ -29,6 +29,34 @@ class GameStorage {
     }
   }
 
+  Future<int> importJson(Map<String, Object?> json) async {
+    int gameNumber = 0;
+    if (json case {'games': List<Object?> gamesJson}) {
+      for (final Object? gameJson in gamesJson) {
+        await saveGame(game: Game.fromJson(gameJson as Map<String, Object?>));
+        gameNumber++;
+      }
+    }
+
+    return gameNumber;
+  }
+
+  Map<String, Object?> exportJson({List<String>? gameIds}) {
+    List<Object?> gamesJson = [];
+
+    if (gameIds == null) {
+      for (final Game game in games.values) {
+        gamesJson.add(game.toJson());
+      }
+    } else {
+      for (final String gameId in gameIds) {
+        if (_games.containsKey(gameId)) gamesJson.add(_games[gameId]!.toJson());
+      }
+    }
+
+    return {'games': gamesJson};
+  }
+
   Future<String> saveGame({required Game game}) async {
     final String gameId = game.startTime.millisecondsSinceEpoch.toString();
     final String gameJson = jsonEncode(game.toJson());

@@ -142,29 +142,47 @@ abstract class AppLocalizations {
   /// **'Extra'**
   String get extra;
 
-  /// No description provided for @continueButton.
+  /// No description provided for @import.
   ///
   /// In en, this message translates to:
-  /// **'CONTINUE'**
-  String get continueButton;
+  /// **'Import'**
+  String get import;
 
-  /// No description provided for @viewButton.
+  /// No description provided for @export.
   ///
   /// In en, this message translates to:
-  /// **'VIEW'**
-  String get viewButton;
+  /// **'Export'**
+  String get export;
 
-  /// No description provided for @deleteButton.
+  /// No description provided for @exportAll.
   ///
   /// In en, this message translates to:
-  /// **'DELETE'**
-  String get deleteButton;
+  /// **'Export all'**
+  String get exportAll;
 
-  /// No description provided for @cancelButton.
+  /// No description provided for @continueLabel.
   ///
   /// In en, this message translates to:
-  /// **'CANCEL'**
-  String get cancelButton;
+  /// **'Continue'**
+  String get continueLabel;
+
+  /// No description provided for @view.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get view;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
 
   /// No description provided for @deleteQuestion.
   ///

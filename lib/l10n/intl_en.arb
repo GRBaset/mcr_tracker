@@ -15,10 +15,13 @@
   "south": "South",
   "north": "North",
   "extra": "Extra",
-  "continueButton": "CONTINUE",
-  "viewButton": "VIEW",
-  "deleteButton": "DELETE",
-  "cancelButton": "CANCEL",
+  "import": "Import",
+  "export": "Export",
+  "exportAll": "Export all",
+  "continueLabel": "Continue",
+  "view": "View",
+  "delete": "Delete",
+  "cancel": "Cancel",
   "deleteQuestion": "Delete {object}?",
   "@deleteQuestion": {
     "placeholders": {

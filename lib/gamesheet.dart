@@ -165,7 +165,7 @@ class _GamePageState extends State<GamePage> {
                 Navigator.of(context).pop();
               },
               child: Text(
-                AppLocalizations.of(context)!.deleteButton,
+                AppLocalizations.of(context)!.delete.toUpperCase(),
                 style: TextStyle(color: Colors.red),
               ),
             ),
@@ -173,7 +173,7 @@ class _GamePageState extends State<GamePage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text(AppLocalizations.of(context)!.cancelButton),
+              child: Text(AppLocalizations.of(context)!.cancel.toUpperCase()),
             ),
           ],
         );

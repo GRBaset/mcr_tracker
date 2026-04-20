@@ -32,16 +32,25 @@ class AppLocalizationsEs extends AppLocalizations {
   String get extra => 'Extra';
 
   @override
-  String get continueButton => 'CONTINUAR';
+  String get import => 'Importar';
 
   @override
-  String get viewButton => 'VER';
+  String get export => 'Exportar';
 
   @override
-  String get deleteButton => 'BORRAR';
+  String get exportAll => 'Exportar todos';
 
   @override
-  String get cancelButton => 'CANCELAR';
+  String get continueLabel => 'Continuar';
+
+  @override
+  String get view => 'Ver';
+
+  @override
+  String get delete => 'Borrar';
+
+  @override
+  String get cancel => 'Cancelar';
 
   @override
   String deleteQuestion(String object) {
