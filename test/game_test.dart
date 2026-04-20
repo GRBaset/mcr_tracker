@@ -79,10 +79,10 @@ void main() {
         Player(name: '4', initialPosition: Position.north),
       ];
       final game = Game(players: players.toSet());
-      game.addHand(Hand.selfDraw(value: 8, winner: players[0]));
+      game.addHand(hand: Hand.selfDraw(value: 8, winner: players[0]));
       expect(game.handScores().partial[0][players[0]], 48);
 
-      game.addHand(
+      game.addHand(hand: 
         Hand.offDiscard(value: 16, winner: players[2], giver: players[0]),
       );
       print(game.handScores());
@@ -97,9 +97,9 @@ void main() {
         Player(name: '4', initialPosition: Position.north),
       ];
       final Game game = Game(players: players.toSet());
-      game.addHand(Hand.draw());
-      game.addHand(Hand.selfDraw(value: 8, winner: players[0]));
-      game.addHand(
+      game.addHand(hand: Hand.draw());
+      game.addHand(hand: Hand.selfDraw(value: 8, winner: players[0]));
+      game.addHand(hand: 
         Hand.offDiscard(value: 16, winner: players[2], giver: players[0]),
       );
 
@@ -120,11 +120,11 @@ void main() {
         players: players.toSet(),
         startTime: DateTime.fromMillisecondsSinceEpoch(0),
       );
-      game.addHand(Hand.draw(endTime: game.startTime));
-      game.addHand(
+      game.addHand(hand: Hand.draw(endTime: game.startTime));
+      game.addHand(hand: 
         Hand.selfDraw(endTime: game.startTime, value: 8, winner: players[0]),
       );
-      game.addHand(
+      game.addHand(hand: 
         Hand.offDiscard(
           endTime: game.startTime,
           value: 16,

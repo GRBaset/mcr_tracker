@@ -85,6 +85,7 @@ class Game {
   DateTime? endTime;
   final Set<Player> players;
   final List<Hand> _hands = [];
+  final List<({HandNumber handNumber, Hand hand})> _deletedHands = [];
   final GameStorage _storage = GameStorage();
 
   bool get finished => endTime != null;
@@ -94,6 +95,7 @@ class Game {
   HandNumber get currentHandNumber =>
       finished ? HandNumber(_hands.length - 1) : HandNumber(_hands.length);
   bool get withExtraPlayer => players.length > 4;
+  bool get canRestore => _deletedHands.isNotEmpty;
 
   Future<void> _save() async => await _storage.saveGame(game: this);
 
@@ -107,7 +109,7 @@ class Game {
     await _save();
   }
 
-  Future<void> addHand(Hand hand) async {
+  Future<void> addHand({required Hand hand}) async {
     if (finished) throw GameFinishedException();
     _hands.add(hand);
     // TODO: allow for customization, currently we finish on 16th hand
@@ -115,9 +117,32 @@ class Game {
     await _save();
   }
 
-  Future<void> removeHand(Hand hand) async {
+  Future<void> updateHand({
+    required HandNumber handNumber,
+    required Hand hand,
+  }) async {
     if (finished) throw GameFinishedException();
-    _hands.remove(hand);
+    _hands[handNumber.number] = hand;
+    await _save();
+  }
+
+  Future<void> removeHand({required HandNumber handNumber}) async {
+    if (finished) throw GameFinishedException();
+    _deletedHands.add((
+      handNumber: handNumber,
+      hand: _hands[handNumber.number],
+    ));
+    _hands.removeAt(handNumber.number);
+    await _save();
+  }
+
+  Future<void> restoreLastHand() async {
+    if (finished) throw GameFinishedException();
+    if (!canRestore) return;
+    final HandNumber handNumber = _deletedHands.last.handNumber;
+    final Hand hand = _deletedHands.last.hand;
+    _hands.insert(handNumber.number, hand);
+    _deletedHands.removeLast();
     await _save();
   }
 
@@ -241,7 +266,7 @@ class Game {
           switch (hand) {
             case {'endTime': final String? endTimeString, 'endKind': 'draw'}:
               game.addHand(
-                Hand.draw(
+                hand: Hand.draw(
                   endTime:
                       DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
                 ),
@@ -253,7 +278,7 @@ class Game {
               'winner': final int winnerInitialPosition,
             }:
               game.addHand(
-                Hand.selfDraw(
+                hand: Hand.selfDraw(
                   endTime:
                       DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
                   value: value,
@@ -271,7 +296,7 @@ class Game {
               'giver': final int giverInitialPosition,
             }:
               game.addHand(
-                Hand.offDiscard(
+                hand: Hand.offDiscard(
                   endTime:
                       DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
                   value: value,

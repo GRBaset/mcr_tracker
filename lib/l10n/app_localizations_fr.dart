@@ -62,7 +62,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Êtes-vous absolument certain de vouler supprimer ce partie? Cette action est irréversible.';
 
   @override
-  String get deleteHandDialog => 'Vous voulez supprimer la dernière donne?';
+  String deleteHandDialog(String position) {
+    return 'Vous voulez supprimer la dernière donne?';
+  }
 
   @override
   String get required => 'Requis';
@@ -98,7 +100,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get hand => 'Donne';
 
   @override
+  String get last => 'Dernière';
+
+  @override
   String get deleteLastHand => 'Supprimer la dernière donne';
+
+  @override
+  String get restoreLastHand => 'Restaurer la dernière donne supprimée';
 
   @override
   String get handEnd => 'Fin de donne';

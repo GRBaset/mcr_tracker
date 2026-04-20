@@ -199,8 +199,8 @@ abstract class AppLocalizations {
   /// No description provided for @deleteHandDialog.
   ///
   /// In en, this message translates to:
-  /// **'Do you want to delete the last hand?'**
-  String get deleteHandDialog;
+  /// **'Do you want to delete the {position} hand?'**
+  String deleteHandDialog(String position);
 
   /// No description provided for @required.
   ///
@@ -268,11 +268,23 @@ abstract class AppLocalizations {
   /// **'Hand'**
   String get hand;
 
+  /// No description provided for @last.
+  ///
+  /// In en, this message translates to:
+  /// **'Last'**
+  String get last;
+
   /// No description provided for @deleteLastHand.
   ///
   /// In en, this message translates to:
   /// **'Delete last hand'**
   String get deleteLastHand;
+
+  /// No description provided for @restoreLastHand.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore last deleted hand'**
+  String get restoreLastHand;
 
   /// No description provided for @handEnd.
   ///

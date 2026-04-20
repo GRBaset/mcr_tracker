@@ -56,7 +56,10 @@ class _GamePageState extends State<GamePage> {
       // TURN HAND -8 -8 -18 +x
       builtDataRows.add(
         DataRow(
-          onLongPress: _deleteHandDialog,
+          onLongPress:
+              widget.game.finished
+                  ? null
+                  : () => _deleteHandDialog(handNumber: handNumber),
           cells: [
             DataCell(Center(child: Text(_shortHandPosition(handNumber)))),
             DataCell(Center(child: Text(hand.value?.toString() ?? ''))),
@@ -76,7 +79,11 @@ class _GamePageState extends State<GamePage> {
               context,
             ).colorScheme.secondary.withValues(alpha: 0.15);
           }),
-          onLongPress: _deleteHandDialog,
+          onLongPress:
+              () =>
+                  widget.game.finished
+                      ? null
+                      : _deleteHandDialog(handNumber: handNumber),
           cells: [
             DataCell(Center(child: Text(AppLocalizations.of(context)!.total))),
             const DataCell(Text('')),
@@ -143,11 +150,17 @@ class _GamePageState extends State<GamePage> {
   }
 
   Future<void> _saveHand(Hand hand) async {
-    await widget.game.addHand(hand);
+    await widget.game.addHand(hand: hand);
     setState(() {});
   }
 
-  Future<void> _deleteHandDialog() async {
+  Future<void> _deleteHandDialog({HandNumber? handNumber}) async {
+    if (widget.game.finished) return;
+    final String handPosition =
+        handNumber != null
+            ? _shortHandPosition(handNumber)
+            : AppLocalizations.of(context)!.last.toLowerCase();
+
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -157,11 +170,13 @@ class _GamePageState extends State<GamePage> {
               context,
             )!.deleteQuestion(AppLocalizations.of(context)!.hand.toLowerCase()),
           ),
-          content: Text(AppLocalizations.of(context)!.deleteHandDialog),
+          content: Text(
+            AppLocalizations.of(context)!.deleteHandDialog(handPosition),
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                _deleteLastHand();
+                _deleteHand(handNumber: handNumber);
                 Navigator.of(context).pop();
               },
               child: Text(
@@ -181,10 +196,10 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  Future<void> _deleteLastHand() async {
+  Future<void> _deleteHand({HandNumber? handNumber}) async {
     if (widget.game.hands.isEmpty) return;
-    final Hand lastHand = widget.game.hands.last;
-    await widget.game.removeHand(lastHand);
+    final HandNumber lastHandNumber = HandNumber(widget.game.hands.length - 1);
+    await widget.game.removeHand(handNumber: handNumber ?? lastHandNumber);
     setState(() {});
   }
 
@@ -214,6 +229,14 @@ class _GamePageState extends State<GamePage> {
               onPressed: widget.game.finished ? null : _deleteHandDialog,
               icon: const Icon(Icons.delete),
               tooltip: AppLocalizations.of(context)!.deleteLastHand,
+            ),
+            IconButton(
+              onPressed:
+                  widget.game.finished || !widget.game.canRestore
+                      ? null
+                      : widget.game.restoreLastHand,
+              icon: const Icon(Icons.undo),
+              tooltip: AppLocalizations.of(context)!.restoreLastHand,
             ),
             if (widget.game.finished)
               IconButton(

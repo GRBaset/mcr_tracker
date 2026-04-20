@@ -62,7 +62,9 @@ class AppLocalizationsEs extends AppLocalizations {
       '¿Estás absolutamente seguro de querer borrar esta partida? Esta acción es irreversible.';
 
   @override
-  String get deleteHandDialog => '¿Quieres borrar la última mano?';
+  String deleteHandDialog(String position) {
+    return '¿Quieres borrar la última mano?';
+  }
 
   @override
   String get required => 'Requerido';
@@ -98,7 +100,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get hand => 'Mano';
 
   @override
+  String get last => 'Última';
+
+  @override
   String get deleteLastHand => 'Borrar última mano';
+
+  @override
+  String get restoreLastHand => 'Restaurar última mano borrada';
 
   @override
   String get handEnd => 'Fin de mano';

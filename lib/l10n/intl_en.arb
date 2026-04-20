@@ -32,7 +32,15 @@
     }
   },
   "deleteDialog": "Are you absolutely sure you want to delete this game? This action is irreversible.",
-  "deleteHandDialog": "Do you want to delete the last hand?",
+  "deleteHandDialog": "Do you want to delete the {position} hand?",
+  "@deleteHandDialog": {
+    "placeholders": {
+      "position": {
+        "type": "String",
+        "example": "East 1"
+      }
+    }
+  },
   "required": "Required",
   "startGame": "Start game",
   "newGame": "New game",
@@ -44,7 +52,9 @@
   "scoreSheet": "Game Score Sheet",
   "score": "Score",
   "hand": "Hand",
+  "last": "Last",
   "deleteLastHand": "Delete last hand",
+  "restoreLastHand": "Restore last deleted hand",
   "handEnd": "Hand end",
   "handValue": "Hand value",
   "value": "Value",
