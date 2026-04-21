@@ -8,8 +8,8 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mcr_tracker/src/game.dart';
-import 'package:mcr_tracker/src/game_storage.dart';
+import 'src/game/game.dart';
+import 'src/game_storage.dart';
 import 'l10n/app_localizations.dart';
 
 import 'gamesheet.dart';

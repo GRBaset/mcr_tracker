@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mcr_tracker/src/game.dart';
+import 'src/game/game.dart';
 import 'l10n/app_localizations.dart';
 
 class GamePage extends StatefulWidget {

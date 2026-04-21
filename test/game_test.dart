@@ -2,7 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mcr_tracker/src/game.dart';
+import 'package:mcr_tracker/src/game/game.dart';
+import 'package:mcr_tracker/src/game/hand.dart';
+import 'package:mcr_tracker/src/game/player.dart';
+import 'package:mcr_tracker/src/game/types.dart';
 
 const String testGameV1 = './test/test_data/test_game_v1.json';
 const String testGameV2 = './test/test_data/test_game_v2.json';
@@ -82,8 +85,8 @@ void main() {
       game.addHand(hand: Hand.selfDraw(value: 8, winner: players[0]));
       expect(game.handScores().partial[0][players[0]], 48);
 
-      game.addHand(hand: 
-        Hand.offDiscard(value: 16, winner: players[2], giver: players[0]),
+      game.addHand(
+        hand: Hand.offDiscard(value: 16, winner: players[2], giver: players[0]),
       );
       print(game.handScores());
       expect(game.handScores().total[1][players[0]], 24);
@@ -99,8 +102,8 @@ void main() {
       final Game game = Game(players: players.toSet());
       game.addHand(hand: Hand.draw());
       game.addHand(hand: Hand.selfDraw(value: 8, winner: players[0]));
-      game.addHand(hand: 
-        Hand.offDiscard(value: 16, winner: players[2], giver: players[0]),
+      game.addHand(
+        hand: Hand.offDiscard(value: 16, winner: players[2], giver: players[0]),
       );
 
       final String json = await File(testGameV1).readAsString();
@@ -121,11 +124,15 @@ void main() {
         startTime: DateTime.fromMillisecondsSinceEpoch(0),
       );
       game.addHand(hand: Hand.draw(endTime: game.startTime));
-      game.addHand(hand: 
-        Hand.selfDraw(endTime: game.startTime, value: 8, winner: players[0]),
+      game.addHand(
+        hand: Hand.selfDraw(
+          endTime: game.startTime,
+          value: 8,
+          winner: players[0],
+        ),
       );
-      game.addHand(hand: 
-        Hand.offDiscard(
+      game.addHand(
+        hand: Hand.offDiscard(
           endTime: game.startTime,
           value: 16,
           winner: players[2],

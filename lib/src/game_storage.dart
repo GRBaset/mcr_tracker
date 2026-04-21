@@ -1,7 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 
-import 'game.dart';
+import 'game/game.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const gamePrefix = 'game';
