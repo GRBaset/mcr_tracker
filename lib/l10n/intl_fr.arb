@@ -1,6 +1,7 @@
 {
   "@@locale": "fr",
   "game": "Partie",
+  "player": "Joueur/euse",
   "positionPlayer": "Joueur/euse {position}",
   "@positionPlayer": {
     "placeholders": {
@@ -32,8 +33,30 @@
     }
   },
   "deleteDialog": "Êtes-vous absolument certain de vouler supprimer ce partie? Cette action est irréversible.",
-  "deleteHandDialog": "Vous voulez supprimer la dernière donne?",
+  "deleteHandDialog": "Vous voulez supprimer la donne {position}?",
+  "@deleteHandDialog": {
+    "placeholders": {
+      "position": {
+        "type": "String",
+        "example": "Est 1"
+      }
+    }
+  },
+  "deletePenaltyDialog": "Vous voulez supprimer la pénalité {index} dans la donne {position}?",
+  "@deletePenaltyDialog": {
+    "placeholders": {
+      "index": {
+        "type": "String",
+        "example": "1"
+      },
+      "position": {
+        "type": "String",
+        "example": "Est 1"
+      }
+    }
+  },
   "required": "Requis",
+  "optional": "Facultatif",
   "startGame": "Commencer la partie",
   "newGame": "Nouvelle partie",
   "finished": "Finie",
@@ -56,5 +79,22 @@
   "addHand": "Ajouter la donne",
   "draw": "Donne nulle",
   "self": "Tiré soi-même",
-  "offDiscard": "Sur défausse"
+  "offDiscard": "Sur défausse",
+  "penalty": "Pénalité",
+  "penalize": "Pénaliser",
+  "penaltyKind": "Sorte de pénalité",
+  "penaltyReason": "Motif de pénalité",
+  "deducedPoints": "Points retirés",
+  "pointsPerOpponent": "Points par adversaire",
+  "description": "Description",
+  "warning": "Avis",
+  "deadHand": "Main morte",
+  "pointPenalty": "Pénalité de points",
+  "repeatedFouls": "Fautes répétées",
+  "invalidHand": "Faux hu (main invalide)",
+  "notEnoughPoints": "Faux hu (points insuffisants)",
+  "winningTileNotTaken": "Tuile gagnante non prise",
+  "lateArrival": "Retard",
+  "obstruction": "Obstruction",
+  "other": "Autre"
 }

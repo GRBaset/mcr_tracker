@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mcr_tracker/l10n/app_localizations.dart';
-import 'player.dart';
 
 enum Position implements Comparable {
   east,
@@ -33,23 +32,3 @@ enum Position implements Comparable {
     return index.compareTo(other.index);
   }
 }
-
-enum HandEndKind {
-  draw,
-  selfDraw,
-  offDiscard;
-
-  String translatedString(BuildContext context) => switch (this) {
-    HandEndKind.draw => AppLocalizations.of(context)!.draw,
-    HandEndKind.selfDraw => AppLocalizations.of(context)!.self,
-    HandEndKind.offDiscard => AppLocalizations.of(context)!.offDiscard,
-  };
-
-  factory HandEndKind.fromJson(String inputString) =>
-      values.firstWhere((value) => value.name == inputString);
-  String toJson() => name;
-}
-
-typedef HandScores = ({List<PlayerScores> partial, List<PlayerScores> total});
-
-typedef PlayerScores = Map<Player, int>;

@@ -1,26 +1,23 @@
+import 'dart:collection';
+import 'dart:math';
+
 import 'package:collection/collection.dart';
+import 'package:mcr_tracker/src/game/penalty.dart';
+import 'package:mcr_tracker/src/game/scores.dart';
 import '../game_storage.dart';
 import 'hand.dart';
 import 'player.dart';
 import 'types.dart';
 
 export 'hand.dart';
+export 'penalty.dart';
 export 'player.dart';
 export 'types.dart';
-
-extension on PlayerScores {
-  PlayerScores operator +(PlayerScores? other) {
-    if (other == null) return this;
-
-    return map((player, score) {
-      score += other[player] ?? 0;
-      return MapEntry(player, score);
-    });
-  }
-}
+export 'scores.dart';
 
 class Game {
   Game._internal({
+    required this.storage,
     required this.players,
     required this.startTime,
     this.endTime,
@@ -29,23 +26,36 @@ class Game {
   final DateTime startTime;
   DateTime? endTime;
   final Set<Player> players;
-  final List<Hand> _hands = [];
-  final List<({HandNumber handNumber, Hand hand})> _deletedHands = [];
-  final GameStorage _storage = GameStorage();
+  final GameStorage storage;
 
-  bool get finished => endTime != null;
+  final Map<HandNumber, HandEnd> _hands = SplayTreeMap();
+  final Map<HandNumber, List<Penalty>> _penalties = SplayTreeMap();
+  final List<({HandNumber handNumber, HandEnd hand})> _deletedHands = [];
+
   UnmodifiableListView<Player> get playersSorted =>
       UnmodifiableListView(players.sorted((a, b) => a.compareTo(b)));
-  UnmodifiableListView<Hand> get hands => UnmodifiableListView(_hands);
-  HandNumber get currentHandNumber =>
-      finished ? HandNumber(_hands.length - 1) : HandNumber(_hands.length);
+  UnmodifiableMapView<HandNumber, HandEnd> get hands =>
+      UnmodifiableMapView(_hands);
+  UnmodifiableMapView<HandNumber, List<Penalty>> get penalties =>
+      UnmodifiableMapView(_penalties);
+  Iterable<HandNumber> get handNumbers =>
+      Iterable.generate(currentHandNumber.number + 2, (n) => HandNumber(n));
+
+  bool get finished => endTime != null;
+  HandNumber get currentHandNumber {
+    final HandNumber lastHand = _hands.keys.lastOrNull ?? HandNumber(-1);
+    final HandNumber lastPenalty = _penalties.keys.lastOrNull ?? HandNumber(-1);
+    return (lastPenalty.compareTo(lastHand) > 0 ? lastPenalty : lastHand) +
+        (finished ? -1 : 0);
+  }
+
   bool get withExtraPlayer => players.length > 4;
   bool get canRestore => _deletedHands.isNotEmpty;
 
-  Future<void> _save() async => await _storage.saveGame(game: this);
+  Future<void> _save() async => await storage.saveGame(game: this);
 
-  Future<void> finish({DateTime? newEndTime, bool save = true}) async {
-    endTime = newEndTime ?? DateTime.timestamp();
+  Future<void> finish({DateTime? endTime, bool save = true}) async {
+    this.endTime = endTime ?? DateTime.timestamp();
     if (save) await _save();
   }
 
@@ -54,110 +64,123 @@ class Game {
     await _save();
   }
 
-  Future<void> addHand({required Hand hand}) async {
+  Future<void> addPenalty({
+    required Penalty penalty,
+    HandNumber? handNumber,
+  }) async {
     if (finished) throw GameFinishedException();
-    _hands.add(hand);
+
+    final HandNumber penaltyhandNumber = handNumber ?? currentHandNumber;
+    if (!_penalties.containsKey(penaltyhandNumber)) {
+      _penalties[penaltyhandNumber] = [];
+    }
+    _penalties[penaltyhandNumber]!.add(penalty);
+
+    await _save();
+  }
+
+  Future<void> removePenalty({
+    required HandNumber handNumber,
+    required int? index,
+  }) async {
+    if (finished) throw GameFinishedException();
+    if (!_penalties.containsKey(handNumber)) return;
+
+    if (index == null) {
+      _penalties[handNumber]!.removeLast();
+    } else if (index < _penalties[handNumber]!.length) {
+      _penalties[handNumber]!.removeAt(index);
+    } else {
+      return;
+    }
+
+    if (_penalties[handNumber]!.isEmpty) _penalties.remove(handNumber);
+
+    await _save();
+  }
+
+  Future<void> addHand({required HandEnd hand}) async {
+    if (finished) throw GameFinishedException();
+    _hands[currentHandNumber + 1] = hand;
     // TODO: allow for customization, currently we finish on 16th hand
-    if (_hands.length >= 16) finish(save: false);
+    if (currentHandNumber.number >= 16) finish(save: false);
     await _save();
   }
 
   Future<void> updateHand({
     required HandNumber handNumber,
-    required Hand hand,
+    required HandEnd hand,
   }) async {
     if (finished) throw GameFinishedException();
-    _hands[handNumber.number] = hand;
+    _hands[handNumber] = hand;
     await _save();
   }
 
   Future<void> removeHand({required HandNumber handNumber}) async {
     if (finished) throw GameFinishedException();
-    _deletedHands.add((
-      handNumber: handNumber,
-      hand: _hands[handNumber.number],
-    ));
-    _hands.removeAt(handNumber.number);
+    if (!_hands.containsKey(handNumber)) return;
+
+    _deletedHands.add((handNumber: handNumber, hand: _hands[handNumber]!));
+    _hands.remove(handNumber);
     await _save();
   }
 
   Future<void> restoreLastHand() async {
     if (finished) throw GameFinishedException();
     if (!canRestore) return;
+
     final HandNumber handNumber = _deletedHands.last.handNumber;
-    final Hand hand = _deletedHands.last.hand;
-    _hands.insert(handNumber.number, hand);
+    final HandEnd hand = _deletedHands.last.hand;
+    _hands[handNumber] = hand;
     _deletedHands.removeLast();
     await _save();
   }
 
-  Position playerPosition(Player player) => player.currentPosition(
-    handNumber: currentHandNumber,
-    withExtraPlayer: withExtraPlayer,
-  );
-
-  bool isPlaying(Player player) => playerPosition(player) != Position.extra;
-
-  HandScores handScores() {
-    List<PlayerScores> playerScoresList = [];
-    List<PlayerScores> playerTotalScoresList = [
-      Map.fromIterables(players, List.filled(players.length, 0)),
-    ];
-
-    for (final hand in _hands) {
-      PlayerScores playerScores = Map.fromIterables(
-        players,
-        List.filled(players.length, 0),
+  Position playerPosition(Player player, {HandNumber? handNumber}) =>
+      player.currentPosition(
+        handNumber: handNumber ?? currentHandNumber,
+        withExtraPlayer: withExtraPlayer,
       );
-      switch (hand.endKind) {
-        case HandEndKind.draw:
-          ;
-        case HandEndKind.selfDraw:
-          playerScores.updateAll((player, score) {
-            if (isPlaying(player)) {
-              if (player == hand.winner!) {
-                score = (hand.value! + 8) * 3;
-              } else {
-                score = -hand.value! - 8;
-              }
-            }
 
-            return score;
-          });
-        case HandEndKind.offDiscard:
-          playerScores.updateAll((player, score) {
-            if (isPlaying(player)) {
-              if (player == hand.winner!) {
-                score = hand.value! + 8 * 3;
-              } else if (player == hand.giver!) {
-                score = -hand.value! - 8;
-              } else {
-                score = -8;
-              }
-            }
+  bool isPlaying(Player player, {HandNumber? handNumber}) =>
+      playerPosition(player, handNumber: handNumber) != Position.extra;
 
-            return score;
-          });
-      }
+  Iterable<Player> playersPlaying({HandNumber? handNumber}) =>
+      players.where((player) => isPlaying(player, handNumber: handNumber));
 
-      playerScoresList.add(playerScores);
-      playerTotalScoresList.add(
-        playerScores + playerTotalScoresList.lastOrNull,
+  GameScores gameScores() {
+    GameScores gameScores = GameScores({});
+
+    for (final HandNumber handNumber in handNumbers) {
+      final HandEnd? hand = _hands[handNumber];
+      final List<Penalty>? handPenalties = _penalties[handNumber];
+      final Iterable<Player> playersPlaying = this.playersPlaying(
+        handNumber: handNumber,
       );
+
+      HandScores handScores = HandScores(
+        endScores: hand?.playerScores(playersPlaying),
+        penaltyScores:
+            handPenalties
+                ?.map((penalty) => penalty.playerScores(playersPlaying))
+                .toList(),
+      );
+
+      gameScores[handNumber] = handScores;
     }
 
-    return (partial: playerScoresList, total: playerTotalScoresList);
+    return gameScores;
   }
 
   PlayerScores playerTotalScores() {
-    final (partial: _, total: playerTotalScoresList) = handScores();
-    return playerTotalScoresList.last;
+    return gameScores().sum(players);
   }
 
   factory Game({
     required Set<Player> players,
     DateTime? startTime,
     DateTime? endTime,
+    GameStorage? storage,
   }) {
     final int playerNumber = players.length;
 
@@ -179,26 +202,30 @@ class Game {
     }
 
     return Game._internal(
+      storage: storage ?? GameStorage(),
       players: players,
       startTime: startTime ?? DateTime.timestamp(),
       endTime: endTime,
     );
   }
 
-  factory Game.fromJson(Map<String, Object?> json) {
+  factory Game.fromJson(Map<String, Object?> json, {GameStorage? storage}) {
     if (!json.containsKey('endTime')) json['endTime'] = null;
+    if (!json.containsKey('penalties')) json['penalties'] = null;
 
     if (json case {
       'players': final List<Object?> jsonPlayers,
       'startTime': final String startTimeString,
       'endTime': final String? endTimeString,
       'hands': final List<Object?> jsonHands,
+      'penalties': final Map<String, Object?>? jsonPenalties,
     }) {
       final Set<Player> players =
           jsonPlayers
               .map((json) => Player.fromJson(json as Map<String, Object?>))
               .toSet();
       final Game game = Game(
+        storage: storage,
         players: players,
         startTime: DateTime.parse(startTimeString),
       );
@@ -208,58 +235,26 @@ class Game {
         if (hand is Map<String, Object?>) {
           if (!hand.containsKey('endTime')) hand['endTime'] = null;
 
-          switch (hand) {
-            case {'endTime': final String? endTimeString, 'endKind': 'draw'}:
-              game.addHand(
-                hand: Hand.draw(
-                  endTime:
-                      DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
-                ),
-              );
-            case {
-              'endTime': final String? endTimeString,
-              'endKind': 'selfDraw',
-              'value': final int value,
-              'winner': final int winnerInitialPosition,
-            }:
-              game.addHand(
-                hand: Hand.selfDraw(
-                  endTime:
-                      DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
-                  value: value,
-                  winner: players.firstWhere(
-                    (player) =>
-                        player.initialPosition.index == winnerInitialPosition,
-                  ),
-                ),
-              );
-            case {
-              'endTime': final String? endTimeString,
-              'endKind': 'offDiscard',
-              'value': final int value,
-              'winner': final int winnerInitialPosition,
-              'giver': final int giverInitialPosition,
-            }:
-              game.addHand(
-                hand: Hand.offDiscard(
-                  endTime:
-                      DateTime.tryParse(endTimeString ?? '') ?? game.startTime,
-                  value: value,
-                  winner: players.firstWhere(
-                    (player) =>
-                        player.initialPosition.index == winnerInitialPosition,
-                  ),
-                  giver: players.firstWhere(
-                    (player) =>
-                        player.initialPosition.index == giverInitialPosition,
-                  ),
-                ),
-              );
-          }
+          game.addHand(hand: HandEnd.fromJson(hand, players: game.players));
         }
       }
 
-      if (endTime != null) game.finish(newEndTime: endTime);
+      if (jsonPenalties != null) {
+        jsonPenalties.forEach((handNumber, handPenalties) {
+          if (handPenalties is List<Object?>) {
+            for (final penalty in handPenalties) {
+              if (penalty is Map<String, Object?>) {
+                game.addPenalty(
+                  penalty: Penalty.fromJson(penalty, players: game.players),
+                  handNumber: HandNumber(int.parse(handNumber)),
+                );
+              }
+            }
+          }
+        });
+      }
+
+      if (endTime != null) game.finish(endTime: endTime);
       return game;
     }
 
@@ -271,18 +266,10 @@ class Game {
     'startTime': startTime.toIso8601String(),
     'endTime': endTime?.toIso8601String(),
     'finished': finished,
-    'hands':
-        hands
-            .map(
-              (hand) => {
-                'endTime': hand.endTime.toIso8601String(),
-                'endKind': hand.endKind,
-                'value': hand.value,
-                'winner': hand.winner?.initialPosition,
-                'giver': hand.giver?.initialPosition,
-              },
-            )
-            .toList(),
+    'hands': _hands.values.toList(),
+    'penalties': _penalties.map(
+      (handNumber, penalties) => MapEntry(handNumber.toString(), penalties),
+    ),
   };
 }
 
@@ -291,7 +278,6 @@ class GameFinishedException implements Exception {
 
   @override
   String toString() {
-    // TODO: implement toString
     return 'Game finished, cannot modify.';
   }
 }

@@ -12,6 +12,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get game => 'Partida';
 
   @override
+  String get player => 'Jugador(a)';
+
+  @override
   String positionPlayer(String position) {
     return 'Jugador(a) $position';
   }
@@ -63,11 +66,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String deleteHandDialog(String position) {
-    return '¿Quieres borrar la última mano?';
+    return '¿Quieres borrar la mano $position?';
+  }
+
+  @override
+  String deletePenaltyDialog(String index, String position) {
+    return 'Do you want to delete the $index penalty in the $position hand?';
   }
 
   @override
   String get required => 'Requerido';
+
+  @override
+  String get optional => 'Opcional';
 
   @override
   String get startGame => 'Comenzar la partida';
@@ -137,4 +148,55 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get offDiscard => 'De un descarte';
+
+  @override
+  String get penalty => 'Penalización';
+
+  @override
+  String get penalize => 'Penalizar';
+
+  @override
+  String get penaltyKind => 'Tipo de penalización';
+
+  @override
+  String get penaltyReason => 'Motivo de penalización';
+
+  @override
+  String get deducedPoints => 'Puntos descontados';
+
+  @override
+  String get pointsPerOpponent => 'Puntos por oponente';
+
+  @override
+  String get description => 'Descripción';
+
+  @override
+  String get warning => 'Aviso';
+
+  @override
+  String get deadHand => 'Mano muerta';
+
+  @override
+  String get pointPenalty => 'Penalización de puntos';
+
+  @override
+  String get repeatedFouls => 'Faltas repetidas';
+
+  @override
+  String get invalidHand => 'Falso hu (mano inválida)';
+
+  @override
+  String get notEnoughPoints => 'Falso hu (puntos insuficientes)';
+
+  @override
+  String get winningTileNotTaken => 'Ficha ganadora no cogida';
+
+  @override
+  String get lateArrival => 'Impuntualidad';
+
+  @override
+  String get obstruction => 'Obstrucción';
+
+  @override
+  String get other => 'Otra';
 }

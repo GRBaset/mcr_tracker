@@ -12,6 +12,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get game => 'Partie';
 
   @override
+  String get player => 'Joueur/euse';
+
+  @override
   String positionPlayer(String position) {
     return 'Joueur/euse $position';
   }
@@ -63,11 +66,19 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String deleteHandDialog(String position) {
-    return 'Vous voulez supprimer la dernière donne?';
+    return 'Vous voulez supprimer la donne $position?';
+  }
+
+  @override
+  String deletePenaltyDialog(String index, String position) {
+    return 'Vous voulez supprimer la pénalité $index dans la donne $position?';
   }
 
   @override
   String get required => 'Requis';
+
+  @override
+  String get optional => 'Facultatif';
 
   @override
   String get startGame => 'Commencer la partie';
@@ -137,4 +148,55 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get offDiscard => 'Sur défausse';
+
+  @override
+  String get penalty => 'Pénalité';
+
+  @override
+  String get penalize => 'Pénaliser';
+
+  @override
+  String get penaltyKind => 'Sorte de pénalité';
+
+  @override
+  String get penaltyReason => 'Motif de pénalité';
+
+  @override
+  String get deducedPoints => 'Points retirés';
+
+  @override
+  String get pointsPerOpponent => 'Points par adversaire';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get warning => 'Avis';
+
+  @override
+  String get deadHand => 'Main morte';
+
+  @override
+  String get pointPenalty => 'Pénalité de points';
+
+  @override
+  String get repeatedFouls => 'Fautes répétées';
+
+  @override
+  String get invalidHand => 'Faux hu (main invalide)';
+
+  @override
+  String get notEnoughPoints => 'Faux hu (points insuffisants)';
+
+  @override
+  String get winningTileNotTaken => 'Tuile gagnante non prise';
+
+  @override
+  String get lateArrival => 'Retard';
+
+  @override
+  String get obstruction => 'Obstruction';
+
+  @override
+  String get other => 'Autre';
 }

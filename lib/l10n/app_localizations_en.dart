@@ -12,6 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get game => 'Game';
 
   @override
+  String get player => 'Player';
+
+  @override
   String positionPlayer(String position) {
     return '$position player';
   }
@@ -67,7 +70,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String deletePenaltyDialog(String index, String position) {
+    return 'Do you want to delete the $index penalty in the $position hand?';
+  }
+
+  @override
   String get required => 'Required';
+
+  @override
+  String get optional => 'Optional';
 
   @override
   String get startGame => 'Start game';
@@ -137,4 +148,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get offDiscard => 'Off discard';
+
+  @override
+  String get penalty => 'Penalty';
+
+  @override
+  String get penalize => 'Penalize';
+
+  @override
+  String get penaltyKind => 'Penalty kind';
+
+  @override
+  String get penaltyReason => 'Penalty reason';
+
+  @override
+  String get deducedPoints => 'Deduced points';
+
+  @override
+  String get pointsPerOpponent => 'Points per opponent';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get warning => 'Warning';
+
+  @override
+  String get deadHand => 'Dead hand';
+
+  @override
+  String get pointPenalty => 'Point penalty';
+
+  @override
+  String get repeatedFouls => 'Repeated fouls';
+
+  @override
+  String get invalidHand => 'False hu (invalid hand)';
+
+  @override
+  String get notEnoughPoints => 'False hu (not enough points)';
+
+  @override
+  String get winningTileNotTaken => 'Winning tile not taken';
+
+  @override
+  String get lateArrival => 'Late arrival';
+
+  @override
+  String get obstruction => 'Obstruction';
+
+  @override
+  String get other => 'Other';
 }

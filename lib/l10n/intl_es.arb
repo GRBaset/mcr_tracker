@@ -1,6 +1,7 @@
 {
   "@@locale": "es",
   "game": "Partida",
+  "player": "Jugador(a)",
   "positionPlayer": "Jugador(a) {position}",
   "@positionPlayer": {
     "placeholders": {
@@ -32,8 +33,30 @@
     }
   },
   "deleteDialog": "¿Estás absolutamente seguro de querer borrar esta partida? Esta acción es irreversible.",
-  "deleteHandDialog": "¿Quieres borrar la última mano?",
+  "deleteHandDialog": "¿Quieres borrar la mano {position}?",
+  "@deleteHandDialog": {
+    "placeholders": {
+      "position": {
+        "type": "String",
+        "example": "Este 1"
+      }
+    }
+  },
+  "deletePenaltyDialog": "Do you want to delete the {index} penalty in the {position} hand?",
+  "@deletePenaltyDialog": {
+    "placeholders": {
+      "index": {
+        "type": "String",
+        "example": "1"
+      },
+      "position": {
+        "type": "String",
+        "example": "Este 1"
+      }
+    }
+  },
   "required": "Requerido",
+  "optional": "Opcional",
   "startGame": "Comenzar la partida",
   "newGame": "Nueva partida",
   "finish": "Finalizar",
@@ -56,5 +79,22 @@
   "addHand": "Añadir mano",
   "draw": "Empate",
   "self": "Del muro",
-  "offDiscard": "De un descarte"
+  "offDiscard": "De un descarte",
+  "penalty": "Penalización",
+  "penalize": "Penalizar",
+  "penaltyKind": "Tipo de penalización",
+  "penaltyReason": "Motivo de penalización",
+  "deducedPoints": "Puntos descontados",
+  "pointsPerOpponent": "Puntos por oponente",
+  "description": "Descripción",
+  "warning": "Aviso",
+  "deadHand": "Mano muerta",
+  "pointPenalty": "Penalización de puntos",
+  "repeatedFouls": "Faltas repetidas",
+  "invalidHand": "Falso hu (mano inválida)",
+  "notEnoughPoints": "Falso hu (puntos insuficientes)",
+  "winningTileNotTaken": "Ficha ganadora no cogida",
+  "lateArrival": "Impuntualidad",
+  "obstruction": "Obstrucción",
+  "other": "Otra"
 }

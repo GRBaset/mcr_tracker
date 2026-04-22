@@ -1,6 +1,7 @@
 {
   "@@locale": "en",
   "game": "Game",
+  "player": "Player",
   "positionPlayer": "{position} player",
   "@positionPlayer": {
     "placeholders": {
@@ -41,7 +42,21 @@
       }
     }
   },
+  "deletePenaltyDialog": "Do you want to delete the {index} penalty in the {position} hand?",
+  "@deletePenaltyDialog": {
+    "placeholders": {
+      "index": {
+        "type": "String",
+        "example": "1"
+      },
+      "position": {
+        "type": "String",
+        "example": "East 1"
+      }
+    }
+  },
   "required": "Required",
+  "optional": "Optional",
   "startGame": "Start game",
   "newGame": "New game",
   "finish": "Finish",
@@ -64,5 +79,22 @@
   "addHand": "Add hand",
   "draw": "Draw",
   "self": "Self-drawn",
-  "offDiscard": "Off discard"
+  "offDiscard": "Off discard",
+  "penalty": "Penalty",
+  "penalize": "Penalize",
+  "penaltyKind": "Penalty kind",
+  "penaltyReason": "Penalty reason",
+  "deducedPoints": "Deduced points",
+  "pointsPerOpponent": "Points per opponent",
+  "description": "Description",
+  "warning": "Warning",
+  "deadHand": "Dead hand",
+  "pointPenalty": "Point penalty",
+  "repeatedFouls": "Repeated fouls",
+  "invalidHand": "False hu (invalid hand)",
+  "notEnoughPoints": "False hu (not enough points)",
+  "winningTileNotTaken": "Winning tile not taken",
+  "lateArrival": "Late arrival",
+  "obstruction": "Obstruction",
+  "other": "Other"
 }

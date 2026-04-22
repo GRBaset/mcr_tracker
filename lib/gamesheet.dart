@@ -46,28 +46,76 @@ class _GamePageState extends State<GamePage> {
     //           E   S  W  N
     //           P1 P2 P3 P4 P5
 
-    final HandScores handScores = widget.game.handScores();
+    final Map gameScores =
+        widget.game.gameScores() as Map<HandNumber, HandScores>;
+    PlayerScores playerTotalScores = PlayerScores.zero(widget.game.players);
 
-    widget.game.hands.forEachIndexed((index, hand) {
-      final HandNumber handNumber = HandNumber(index);
-      final PlayerScores playerScores = handScores.partial[index];
-      final PlayerScores playerTotalScores = handScores.total[index + 1];
+    for (final HandNumber handNumber in gameScores.keys) {
+      if (!gameScores.containsKey(handNumber)) continue;
+      final HandScores handScores = gameScores[handNumber]!;
+      final HandEnd? hand = widget.game.hands[handNumber];
 
-      // TURN HAND -8 -8 -18 +x
-      builtDataRows.add(
-        DataRow(
-          onLongPress:
-              widget.game.finished
-                  ? null
-                  : () => _deleteHandDialog(handNumber: handNumber),
-          cells: [
-            DataCell(Center(child: Text(_shortHandPosition(handNumber)))),
-            DataCell(Center(child: Text(hand.value?.toString() ?? ''))),
-            for (final Player player in widget.game.playersSorted)
-              DataCell(Center(child: Text(playerScores[player].toString()))),
-          ],
-        ),
-      );
+      String handPositionString = _shortHandPosition(handNumber);
+
+      if (handScores.endScores != null) {
+        final PlayerScores playerScores = handScores.endScores!;
+        playerTotalScores += playerScores;
+
+        // TURN HAND -8 -8 -18 +x
+        builtDataRows.add(
+          DataRow(
+            onLongPress:
+                widget.game.finished
+                    ? null
+                    : () => _deleteHandDialog(handNumber: handNumber),
+            cells: [
+              DataCell(Center(child: Text(handPositionString))),
+              DataCell(Center(child: Text(hand?.value?.toString() ?? ''))),
+              for (final Player player in widget.game.playersSorted)
+                DataCell(
+                  Center(child: Text((playerScores[player] ?? '-').toString())),
+                ),
+            ],
+          ),
+        );
+
+        handPositionString = '';
+      }
+
+      if (handScores.penaltyScores != null &&
+          handScores.penaltyScores!.isNotEmpty) {
+        for (final (int index, PlayerScores playerScores)
+            in handScores.penaltyScores!.indexed) {
+          playerTotalScores += playerScores;
+
+          // TURN HAND -8 -8 -18 +x
+          builtDataRows.add(
+            DataRow(
+              onLongPress:
+                  widget.game.finished
+                      ? null
+                      : () => _deletePenaltyDialog(
+                        handNumber: handNumber,
+                        index: index,
+                      ),
+              cells: [
+                DataCell(Center(child: Text(handPositionString))),
+                DataCell(Center(child: Icon(Icons.gavel, size: 20))),
+                for (final Player player in widget.game.playersSorted)
+                  DataCell(
+                    Center(
+                      child: Text((playerScores[player] ?? '-').toString()),
+                    ),
+                  ),
+              ],
+            ),
+          );
+          handPositionString = '';
+        }
+      } else if (handNumber ==
+          widget.game.currentHandNumber + 1 + (widget.game.finished ? 1 : 0)) {
+        break;
+      }
 
       // (total)    x   x  x  x  x
       builtDataRows.add(
@@ -94,7 +142,7 @@ class _GamePageState extends State<GamePage> {
           ],
         ),
       );
-    });
+    }
 
     return builtDataRows;
   }
@@ -149,8 +197,13 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  Future<void> _saveHand(Hand hand) async {
+  Future<void> _saveHand(HandEnd hand) async {
     await widget.game.addHand(hand: hand);
+    setState(() {});
+  }
+
+  Future<void> _savePenalty(Penalty penalty) async {
+    await widget.game.addPenalty(penalty: penalty);
     setState(() {});
   }
 
@@ -196,6 +249,57 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
+  Future<void> _deletePenaltyDialog({
+    HandNumber? handNumber,
+    int? index,
+  }) async {
+    if (widget.game.finished) return;
+    final String handPosition =
+        handNumber != null
+            ? _shortHandPosition(handNumber)
+            : AppLocalizations.of(context)!.last.toLowerCase();
+    final String indexString =
+        index != null
+            ? '#${index + 1}'
+            : AppLocalizations.of(context)!.last.toLowerCase();
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            AppLocalizations.of(context)!.deleteQuestion(
+              AppLocalizations.of(context)!.penalty.toLowerCase(),
+            ),
+          ),
+          content: Text(
+            AppLocalizations.of(
+              context,
+            )!.deletePenaltyDialog(indexString, handPosition),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                _deletePenalty(handNumber: handNumber, index: index);
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                AppLocalizations.of(context)!.delete.toUpperCase(),
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context)!.cancel.toUpperCase()),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _deleteHand({HandNumber? handNumber}) async {
     if (widget.game.hands.isEmpty) return;
     final HandNumber lastHandNumber = HandNumber(widget.game.hands.length - 1);
@@ -203,9 +307,21 @@ class _GamePageState extends State<GamePage> {
     setState(() {});
   }
 
+  Future<void> _deletePenalty({HandNumber? handNumber, int? index}) async {
+    if (widget.game.penalties.isEmpty) return;
+    final HandNumber lastHandNumber = HandNumber(widget.game.hands.length - 1);
+    await widget.game.removePenalty(
+      handNumber: handNumber ?? lastHandNumber,
+      index: index,
+    );
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateColumnWidths());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _updateColumnWidths(widget.game.players.length + 2),
+    );
 
     return Scaffold(
       key: _scaffoldKey,
@@ -250,6 +366,11 @@ class _GamePageState extends State<GamePage> {
                 icon: const Icon(Icons.check),
                 tooltip: AppLocalizations.of(context)!.finish,
               ),
+            IconButton(
+              onPressed: widget.game.finished ? null : _penaltyDialog,
+              icon: const Icon(Icons.gavel),
+              tooltip: AppLocalizations.of(context)!.penalize,
+            ),
           ],
         ),
       ),
@@ -274,7 +395,7 @@ class _GamePageState extends State<GamePage> {
   }
 
   Offstage _gameTableHeader({bool offstage = false}) {
-    final HandNumber handNumber = widget.game.currentHandNumber;
+    final HandNumber handNumber = widget.game.currentHandNumber + 1;
     final List<Player> players = widget.game.playersSorted;
     final List<TableColumnWidth?> columnWidths =
         offstage ? List.filled(_columnNumber, null) : _columnWidths;
@@ -311,7 +432,12 @@ class _GamePageState extends State<GamePage> {
               label: Expanded(
                 key: columnKeys[index + 2],
                 child: Text(
-                  player.currentPosition(handNumber: handNumber).character,
+                  player
+                      .currentPosition(
+                        handNumber: handNumber,
+                        withExtraPlayer: widget.game.withExtraPlayer,
+                      )
+                      .character,
                   style: _boldText,
                   textAlign: TextAlign.center,
                 ),
@@ -365,7 +491,7 @@ class _GamePageState extends State<GamePage> {
           builder: (context, StateSetter setState) {
             return AlertDialog(
               content: Stack(
-                clipBehavior: Clip.none,
+                // clipBehavior: Clip.none,
                 children: <Widget>[
                   Positioned(
                     right: -40.0,
@@ -538,23 +664,281 @@ class _GamePageState extends State<GamePage> {
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState?.save();
-                                  Hand hand = switch (handEndKind!) {
-                                    HandEndKind.draw => Hand.draw(),
-                                    HandEndKind.selfDraw => Hand.selfDraw(
+                                  HandEnd hand = switch (handEndKind!) {
+                                    HandEndKind.draw => HandEnd.draw(),
+                                    HandEndKind.selfDraw => HandEnd.selfDraw(
                                       value: handValue!,
                                       winner: winner!,
                                     ),
-                                    HandEndKind.offDiscard => Hand.offDiscard(
-                                      value: handValue!,
-                                      winner: winner!,
-                                      giver: giver!,
-                                    ),
+                                    HandEndKind.offDiscard =>
+                                      HandEnd.offDiscard(
+                                        value: handValue!,
+                                        winner: winner!,
+                                        giver: giver!,
+                                      ),
                                   };
 
                                   Navigator.of(context).pop();
 
                                   _saveHand(hand);
-                                  setState(() {});
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<dynamic> _penaltyDialog() {
+    Player? player;
+    PenaltyKind? kind = PenaltyKind.pointPenalty;
+    PenaltyReason? reason;
+    PenaltyPoints? points;
+    String? description;
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, StateSetter setState) {
+            return AlertDialog(
+              content: Stack(
+                clipBehavior: Clip.none,
+                children: <Widget>[
+                  Positioned(
+                    right: -40.0,
+                    top: -40.0,
+                    child: InkResponse(
+                      onTap: () {
+                        Navigator.of(context).pop('close');
+                      },
+                      child: const CircleAvatar(
+                        backgroundColor: Colors.red,
+                        child: Icon(Icons.close),
+                      ),
+                    ),
+                  ),
+                  Form(
+                    key: _formKey,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: DropdownButtonFormField<Player>(
+                              onChanged: (Player? value) {
+                                setState(() {
+                                  player = value;
+                                });
+                              },
+                              items:
+                                  widget.game.playersSorted
+                                      .where(
+                                        (player) =>
+                                            widget.game.isPlaying(player),
+                                      )
+                                      .map<DropdownMenuItem<Player>>((
+                                        Player value,
+                                      ) {
+                                        return DropdownMenuItem<Player>(
+                                          value: value,
+                                          child: Text(value.name),
+                                        );
+                                      })
+                                      .toList(),
+                              decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!.player,
+                              ),
+                              validator: (value) {
+                                if (value == null) {
+                                  return AppLocalizations.of(context)!.required;
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: DropdownButtonFormField<PenaltyKind>(
+                              initialValue: PenaltyKind.pointPenalty,
+                              onChanged: (PenaltyKind? value) {
+                                setState(() {
+                                  kind = value;
+                                });
+                              },
+                              items:
+                                  PenaltyKind.values
+                                      .map<DropdownMenuItem<PenaltyKind>>((
+                                        PenaltyKind value,
+                                      ) {
+                                        return DropdownMenuItem<PenaltyKind>(
+                                          value: value,
+                                          child: Text(
+                                            value.translatedString(context),
+                                          ),
+                                        );
+                                      })
+                                      .toList(),
+                              decoration: InputDecoration(
+                                labelText:
+                                    AppLocalizations.of(context)!.penaltyKind,
+                              ),
+                              validator: (value) {
+                                if (value == null) {
+                                  return AppLocalizations.of(context)!.required;
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          if (kind == PenaltyKind.pointPenalty)
+                            Padding(
+                              padding: const EdgeInsets.all(1.0),
+                              child: DropdownButtonFormField<PenaltyReason>(
+                                onChanged: (PenaltyReason? value) {
+                                  setState(() {
+                                    reason = value;
+                                  });
+                                },
+                                items:
+                                    PenaltyReason.values.map<
+                                      DropdownMenuItem<PenaltyReason>
+                                    >((PenaltyReason value) {
+                                      return DropdownMenuItem<PenaltyReason>(
+                                        value: value,
+                                        child: Text(
+                                          value.translatedString(context),
+                                        ),
+                                      );
+                                    }).toList(),
+                                decoration: InputDecoration(
+                                  labelText:
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.penaltyReason,
+                                ),
+                                validator: (value) {
+                                  if (value == null) {
+                                    return AppLocalizations.of(
+                                      context,
+                                    )!.required;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          if (kind == PenaltyKind.pointPenalty &&
+                              reason?.points() == null)
+                            Padding(
+                              padding: const EdgeInsets.all(1.0),
+                              child: TextFormField(
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'\d'),
+                                  ),
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                onSaved: (value) {
+                                  points = (
+                                    deduced: int.parse(value!),
+                                    perOpponent: points?.perOpponent ?? 0,
+                                  );
+                                },
+                                decoration: InputDecoration(
+                                  labelText:
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.deducedPoints,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    AppLocalizations.of(context)!.required;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          if (kind == PenaltyKind.pointPenalty &&
+                              reason?.points() == null)
+                            Padding(
+                              padding: const EdgeInsets.all(1.0),
+                              child: TextFormField(
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'\d'),
+                                  ),
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                onSaved: (value) {
+                                  points = (
+                                    deduced: points?.deduced ?? 0,
+                                    perOpponent: int.parse(value!),
+                                  );
+                                },
+                                decoration: InputDecoration(
+                                  labelText:
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.pointsPerOpponent,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    AppLocalizations.of(context)!.required;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: TextFormField(
+                              onSaved: (value) {
+                                description = value;
+                              },
+                              decoration: InputDecoration(
+                                labelText:
+                                    AppLocalizations.of(context)!.description,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  AppLocalizations.of(context)!.required;
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              child: Text(
+                                AppLocalizations.of(context)!.addHand,
+                              ),
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  _formKey.currentState?.save();
+                                  Penalty penalty = Penalty(
+                                    player: player!,
+                                    kind: kind!,
+                                    reason: reason!,
+                                    penaltyPoints: points,
+                                    description: description,
+                                  );
+
+                                  Navigator.of(context).pop();
+
+                                  _savePenalty(penalty);
                                 }
                               },
                             ),
@@ -573,9 +957,9 @@ class _GamePageState extends State<GamePage> {
   }
 
   String _shortHandPosition(HandNumber handNumber) =>
-      '${handNumber.position.character} - ${handNumber.roundHandNumber + 1}';
+      '${handNumber.position.character}  ${handNumber.roundHandNumber + 1}';
 
-  void _updateColumnWidths() {
+  void _updateColumnWidths(int columnNumber) {
     if (!mounted) return;
 
     final List<double> widths = List.filled(_columnNumber, 0.0);
@@ -592,10 +976,11 @@ class _GamePageState extends State<GamePage> {
     setState(() {
       final double? tableWidth = _tableKey.currentContext?.size?.width;
       if (tableWidth != null) {
-        if (tableWidth / _columnNumber - _columnSpacing > widths.max) {
+        if (tableWidth / columnNumber - _columnSpacing - _horizontalMargin >
+            widths.max) {
           _columnWidths.setAll(
             0,
-            List.filled(_columnNumber, FractionColumnWidth(1 / 6)),
+            List.filled(_columnNumber, FractionColumnWidth(1 / columnNumber)),
           );
         } else {
           final int lastIndex = widths.lastIndexWhere((width) => width != 0);

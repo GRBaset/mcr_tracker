@@ -106,6 +106,12 @@ abstract class AppLocalizations {
   /// **'Game'**
   String get game;
 
+  /// No description provided for @player.
+  ///
+  /// In en, this message translates to:
+  /// **'Player'**
+  String get player;
+
   /// No description provided for @positionPlayer.
   ///
   /// In en, this message translates to:
@@ -202,11 +208,23 @@ abstract class AppLocalizations {
   /// **'Do you want to delete the {position} hand?'**
   String deleteHandDialog(String position);
 
+  /// No description provided for @deletePenaltyDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to delete the {index} penalty in the {position} hand?'**
+  String deletePenaltyDialog(String index, String position);
+
   /// No description provided for @required.
   ///
   /// In en, this message translates to:
   /// **'Required'**
   String get required;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
 
   /// No description provided for @startGame.
   ///
@@ -345,6 +363,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Off discard'**
   String get offDiscard;
+
+  /// No description provided for @penalty.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalty'**
+  String get penalty;
+
+  /// No description provided for @penalize.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalize'**
+  String get penalize;
+
+  /// No description provided for @penaltyKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalty kind'**
+  String get penaltyKind;
+
+  /// No description provided for @penaltyReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalty reason'**
+  String get penaltyReason;
+
+  /// No description provided for @deducedPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Deduced points'**
+  String get deducedPoints;
+
+  /// No description provided for @pointsPerOpponent.
+  ///
+  /// In en, this message translates to:
+  /// **'Points per opponent'**
+  String get pointsPerOpponent;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning'**
+  String get warning;
+
+  /// No description provided for @deadHand.
+  ///
+  /// In en, this message translates to:
+  /// **'Dead hand'**
+  String get deadHand;
+
+  /// No description provided for @pointPenalty.
+  ///
+  /// In en, this message translates to:
+  /// **'Point penalty'**
+  String get pointPenalty;
+
+  /// No description provided for @repeatedFouls.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeated fouls'**
+  String get repeatedFouls;
+
+  /// No description provided for @invalidHand.
+  ///
+  /// In en, this message translates to:
+  /// **'False hu (invalid hand)'**
+  String get invalidHand;
+
+  /// No description provided for @notEnoughPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'False hu (not enough points)'**
+  String get notEnoughPoints;
+
+  /// No description provided for @winningTileNotTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Winning tile not taken'**
+  String get winningTileNotTaken;
+
+  /// No description provided for @lateArrival.
+  ///
+  /// In en, this message translates to:
+  /// **'Late arrival'**
+  String get lateArrival;
+
+  /// No description provided for @obstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Obstruction'**
+  String get obstruction;
+
+  /// No description provided for @other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
 }
 
 class _AppLocalizationsDelegate

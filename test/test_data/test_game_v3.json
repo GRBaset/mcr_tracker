@@ -1,0 +1,61 @@
+{
+    "players": [
+        {
+            "name": "1",
+            "initialPosition": 0
+        },
+        {
+            "name": "2",
+            "initialPosition": 1
+        },
+        {
+            "name": "3",
+            "initialPosition": 2
+        },
+        {
+            "name": "4",
+            "initialPosition": 3
+        }
+    ],
+    "startTime": "2026-04-21T21:31:14.713585Z",
+    "endTime": null,
+    "finished": false,
+    "hands": [
+        {
+            "endTime": "2026-04-21T21:31:14.714113Z",
+            "endKind": "draw",
+            "value": null,
+            "winner": null,
+            "giver": null
+        },
+        {
+            "endTime": "2026-04-21T21:31:14.722011Z",
+            "endKind": "selfDraw",
+            "value": 8,
+            "winner": 0,
+            "giver": null
+        },
+        {
+            "endTime": "2026-04-21T21:31:14.722874Z",
+            "endKind": "offDiscard",
+            "value": 16,
+            "winner": 2,
+            "giver": 0
+        }
+    ],
+    "penalties": {
+        "4": [
+            {
+                "time": "2026-04-21T21:31:14.723379Z",
+                "player": 1,
+                "kind": "pointPenalty",
+                "reason": "other",
+                "points": {
+                    "deduced": 0,
+                    "perOpponent": 0
+                },
+                "description": null
+            }
+        ]
+    }
+}
