@@ -441,7 +441,11 @@ class _HomePageState extends State<HomePage> {
 
   String _localizedHandPosition(Game game) {
     final Position position = game.currentHandNumber.position;
-    final int roundHandNumber = game.currentHandNumber.roundHandNumber + 1;
+    final int roundHandNumber =
+        (game.currentHandNumber.number == -1
+            ? 0
+            : game.currentHandNumber.roundHandNumber + 1) +
+        (game.finished ? 0 : 1);
 
     if (game.finished) {
       return '${AppLocalizations.of(context)!.finished} (${position.translatedString(context)} $roundHandNumber)';

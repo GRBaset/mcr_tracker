@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:mcr_tracker/src/game/penalty.dart';
@@ -45,8 +44,7 @@ class Game {
   HandNumber get currentHandNumber {
     final HandNumber lastHand = _hands.keys.lastOrNull ?? HandNumber(-1);
     final HandNumber lastPenalty = _penalties.keys.lastOrNull ?? HandNumber(-1);
-    return (lastPenalty.compareTo(lastHand) > 0 ? lastPenalty : lastHand) +
-        (finished ? -1 : 0);
+    return (lastPenalty.compareTo(lastHand) > 0 ? lastPenalty : lastHand);
   }
 
   bool get withExtraPlayer => players.length > 4;
@@ -70,7 +68,7 @@ class Game {
   }) async {
     if (finished) throw GameFinishedException();
 
-    final HandNumber penaltyhandNumber = handNumber ?? currentHandNumber;
+    final HandNumber penaltyhandNumber = handNumber ?? currentHandNumber + 1;
     if (!_penalties.containsKey(penaltyhandNumber)) {
       _penalties[penaltyhandNumber] = [];
     }

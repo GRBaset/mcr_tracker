@@ -112,8 +112,7 @@ class _GamePageState extends State<GamePage> {
           );
           handPositionString = '';
         }
-      } else if (handNumber ==
-          widget.game.currentHandNumber + 1 + (widget.game.finished ? 1 : 0)) {
+      } else if (handNumber == widget.game.currentHandNumber + 1) {
         break;
       }
 
